@@ -1,41 +1,47 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public interface Mover
+public abstract class Mover
 {
-    float Speed
+    public virtual float Speed
     {
         get;
         set;
     }
 
     //Common methods of getting position return 3d vector
-    Vector3 StartPos
+    public virtual Vector3 StartPos
     {
         get;
         set;
     }
 
-    Vector3 GoalPos
+    public virtual Vector3 GoalPos
     {
         get;
         set;
     }
 
-    Vector3 Position
+    public virtual Vector3 Position
     {
         get;
         set;
     }
 
-    bool IsMoving
+    public virtual bool IsMoving
     {
         get;
         set;
     }
 
-    void StopMoving();
+    public void StopMoving()
+    {
+        IsMoving = false;
+    }
 
-    void MoveTo(Vector3 goal);
+    public abstract void MoveTo(Vector3 goal);
 
+    public abstract void MoverUpdate();
+
+    public abstract void MoverStart();
 }

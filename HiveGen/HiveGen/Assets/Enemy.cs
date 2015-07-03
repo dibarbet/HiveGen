@@ -1,17 +1,21 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Enemy : MonoBehaviour, Mover
+public class Enemy : Mover
 {
-    public float Speed { get; set; }
+    private float m_Speed = 0.1f;
+    public override float Speed { get; set; }
 
-    public Vector3 StartPos { get; set; }
+    private int m_MaxHealth = 100;
+    public int HealthPoints { get; private set; }
 
-    public Vector3 GoalPos {get; set; }
+    public override Vector3 StartPos { get; set; }
 
-    public Vector3 Position { get; set; }
+    public override Vector3 GoalPos {get; set; }
 
-    public bool IsMoving {get; set;}
+    public override Vector3 Position { get; set; }
+
+    public override bool IsMoving {get; set;}
 
     private GameObject m_EnemyObject;
     public GameObject EnemyObject
@@ -33,10 +37,57 @@ public class Enemy : MonoBehaviour, Mover
         EnemyObject = obj;
         Position = obj.transform.position;
         IsMoving = false;
-        Speed = .5f;
+        Speed = m_Speed;
+        HealthPoints = m_MaxHealth;
     }
 
-    public void MoveTo(Vector3 goal)
+    public void Die()
+    {
+        Object.Destroy(EnemyObject);
+    }
+
+    //returns true if operation can succeed.
+    public bool DecrementHealth(int amt)
+    {
+        if (amt >= 0)
+        {
+            if ((HealthPoints - amt) <= 0)
+            {
+                this.Die();
+            }
+            else
+            {
+                HealthPoints -= amt;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public bool IncrementHealth(int amt)
+    {
+        if (amt >= 0)
+        {
+            if (HealthPoints == 0)
+            {
+                this.Die();
+                return false;
+            }
+            else if ((HealthPoints + amt) >= 100)
+            {
+                HealthPoints = 100;
+            }
+            else
+            {
+                HealthPoints += amt;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    //Sets initial variables for starting movement, movement is done in update.
+    public override void MoveTo(Vector3 goal)
     {
         GoalPos = goal;
         StartPos = Position;
@@ -44,20 +95,29 @@ public class Enemy : MonoBehaviour, Mover
         m_MoveStartTime = Time.time;
     }
 
-    public void StopMoving()
+    private bool IsAtGoal()
     {
-        IsMoving = false;
+        return Position.Equals(GoalPos);
     }
 
-    void Update()
+    public override void MoverUpdate()
     {
+        Position = EnemyObject.transform.position;
+        //Debug.Log(IsMoving);
+        Debug.Log(IsAtGoal());
+        Debug.Log("GOAL: " + GoalPos.ToString());
+        Debug.Log("Cur: " + Position.ToString());
+        if (IsAtGoal())
+        {
+            this.StopMoving();
+        }
         if (IsMoving)
         {
             EnemyObject.transform.position = Vector3.Lerp(StartPos, GoalPos, Speed * (Time.time - m_MoveStartTime));
         }
     }
 
-    void Start()
+    public override void MoverStart()
     {
 
     }
