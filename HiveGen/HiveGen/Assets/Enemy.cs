@@ -3,47 +3,22 @@ using System.Collections;
 
 public class Enemy : Mover
 {
-    private float m_Speed = 0.1f;
-    public override float Speed { get; set; }
+    private float m_Speed = 5f;
 
     private int m_MaxHealth = 100;
     public int HealthPoints { get; private set; }
 
-    public override Vector3 StartPos { get; set; }
+    public GameObject EnemyObject { get; set; }
 
-    public override Vector3 GoalPos {get; set; }
-
-    public override Vector3 Position { get; set; }
-
-    public override bool IsMoving {get; set;}
-
-    private GameObject m_EnemyObject;
-    public GameObject EnemyObject
+    //True if operation succeeded
+    public bool Die()
     {
-        get { return m_EnemyObject; }
-        set
+        if (EnemyObject != null)
         {
-            if (value != null)
-            {
-                m_EnemyObject = value;
-            }
+            Object.Destroy(EnemyObject);
+            return true;
         }
-    }
-
-    float m_MoveStartTime;
-
-    public Enemy(GameObject obj)
-    {
-        EnemyObject = obj;
-        Position = obj.transform.position;
-        IsMoving = false;
-        Speed = m_Speed;
-        HealthPoints = m_MaxHealth;
-    }
-
-    public void Die()
-    {
-        Object.Destroy(EnemyObject);
+        return false;
     }
 
     //returns true if operation can succeed.
@@ -86,39 +61,47 @@ public class Enemy : Mover
         return false;
     }
 
-    //Sets initial variables for starting movement, movement is done in update.
-    public override void MoveTo(Vector3 goal)
+    void OnCollisionEnter2D(Collision2D col)
     {
-        GoalPos = goal;
-        StartPos = Position;
-        IsMoving = true;
-        m_MoveStartTime = Time.time;
-    }
-
-    private bool IsAtGoal()
-    {
-        return Position.Equals(GoalPos);
-    }
-
-    public override void MoverUpdate()
-    {
-        Position = EnemyObject.transform.position;
-        //Debug.Log(IsMoving);
-        Debug.Log(IsAtGoal());
-        Debug.Log("GOAL: " + GoalPos.ToString());
-        Debug.Log("Cur: " + Position.ToString());
-        if (IsAtGoal())
+        if (col.gameObject.tag == "Player")
         {
             this.StopMoving();
         }
-        if (IsMoving)
+    }
+
+    void OnCollisionExit2D(Collision2D col)
+    {
+        if (col.gameObject.tag == "Player")
         {
-            EnemyObject.transform.position = Vector3.Lerp(StartPos, GoalPos, Speed * (Time.time - m_MoveStartTime));
+            IsMoving = true;
         }
     }
 
-    public override void MoverStart()
+    public override void Update()
     {
+        Position = transform.position;
+        //Debug.Log(IsMoving);
+        //Debug.Log(IsAtGoal());
+        //Debug.Log("GOAL: " + GoalPos.ToString());
+        //Debug.Log("Cur: " + Position.ToString());
+        if (IsMoving)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, GoalPos, Speed * Time.deltaTime);
+        }
+        
+    }
 
+    private Collider2D col2D;
+    private Rigidbody2D rgdBdy;
+
+    public override void Start()
+    {
+        EnemyObject = this.gameObject;
+        Position = this.transform.position;
+        IsMoving = false;
+        Speed = m_Speed;
+        HealthPoints = m_MaxHealth;
+        col2D = EnemyObject.GetComponent<Collider2D>();
+        rgdBdy = EnemyObject.gameObject.GetComponent<Rigidbody2D>();
     }
 }
