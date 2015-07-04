@@ -3,22 +3,47 @@ using System.Collections;
 
 public class Enemy : Mover
 {
-    private float m_Speed = 100f;
+    private float m_Speed = 100.0f;
+    public override float Speed
+    {
+        get { return m_Speed; }
+        set { m_Speed = value; }
+    }
 
     private int m_MaxHealth = 100;
     public int HealthPoints { get; private set; }
 
     public GameObject EnemyObject { get; set; }
 
-    //True if operation succeeded
-    public bool Die()
+    private Collider2D col2D;
+    private Rigidbody2D rgdBdy;
+    private Player Player;
+
+    //Use awake, start is not always called at object creation, leading to null reference errors
+    public void Awake()
     {
-        if (EnemyObject != null)
+        EnemyObject = this.gameObject;
+        Player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        Position = this.transform.position;
+        IsMoving = false;
+        HealthPoints = m_MaxHealth;
+        col2D = EnemyObject.GetComponent<Collider2D>();
+        rgdBdy = EnemyObject.gameObject.GetComponent<Rigidbody2D>();
+    }
+
+    public override void Update()
+    {
+        Position = transform.position;
+        if (IsMoving)
         {
-            Object.Destroy(EnemyObject);
-            return true;
+            transform.position = Vector3.MoveTowards(transform.position, GoalPos, Speed * Time.deltaTime);
         }
-        return false;
+    }
+
+    //Perhaps trigger animations here?
+    public void Attack()
+    {
+        Player.DecrementHealth(5);
     }
 
     //returns true if operation can succeed.
@@ -34,6 +59,7 @@ public class Enemy : Mover
             {
                 HealthPoints -= amt;
             }
+            Debug.Log("Decreasing HP: " + HealthPoints.ToString());
             return true;
         }
         return false;
@@ -56,6 +82,7 @@ public class Enemy : Mover
             {
                 HealthPoints += amt;
             }
+            Debug.Log("Increasing HP");
             return true;
         }
         return false;
@@ -77,43 +104,5 @@ public class Enemy : Mover
             IsMoving = true;
             CancelInvoke("Attack");
         }
-    }
-
-    public override void Update()
-    {
-        Position = transform.position;
-        //Debug.Log(IsMoving);
-        //Debug.Log(IsAtGoal());
-        //Debug.Log("GOAL: " + GoalPos.ToString());
-        //Debug.Log("Cur: " + Position.ToString());
-        if (IsMoving)
-        {
-            transform.position = Vector3.MoveTowards(transform.position, GoalPos, Speed * Time.deltaTime);
-        }
-
-    }
-
-    public void Attack()
-    {
-        Player.DecrementHealth(5);
-    }
-
-
-
-
-    private Collider2D col2D;
-    private Rigidbody2D rgdBdy;
-    private Player Player;
-
-    public void Awake()
-    {
-        EnemyObject = this.gameObject;
-        Player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
-        Position = this.transform.position;
-        IsMoving = false;
-        Speed = m_Speed;
-        HealthPoints = m_MaxHealth;
-        col2D = EnemyObject.GetComponent<Collider2D>();
-        rgdBdy = EnemyObject.gameObject.GetComponent<Rigidbody2D>();
     }
 }

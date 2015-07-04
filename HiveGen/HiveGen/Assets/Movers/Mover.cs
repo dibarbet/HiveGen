@@ -36,6 +36,16 @@ public class Mover : MonoBehaviour
         IsMoving = true;
     }
 
+    public virtual bool Die()
+    {
+        if (this.gameObject != null)
+        {
+            Object.Destroy(this.gameObject);
+            return true;
+        }
+        return false;
+    }
+
     public virtual void Start()
     {
 
