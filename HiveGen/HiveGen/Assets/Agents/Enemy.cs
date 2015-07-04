@@ -66,6 +66,7 @@ public class Enemy : Mover
         if (col.gameObject.tag == "Player")
         {
             this.StopMoving();
+            InvokeRepeating("Attack", .3f, 1f);
         }
     }
 
@@ -74,6 +75,7 @@ public class Enemy : Mover
         if (col.gameObject.tag == "Player")
         {
             IsMoving = true;
+            CancelInvoke("Attack");
         }
     }
 
@@ -88,15 +90,25 @@ public class Enemy : Mover
         {
             transform.position = Vector3.MoveTowards(transform.position, GoalPos, Speed * Time.deltaTime);
         }
-        
+
     }
+
+    public void Attack()
+    {
+        Player.DecrementHealth(5);
+    }
+
+
+
 
     private Collider2D col2D;
     private Rigidbody2D rgdBdy;
+    private Player Player;
 
-    public override void Start()
+    public void Awake()
     {
         EnemyObject = this.gameObject;
+        Player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         Position = this.transform.position;
         IsMoving = false;
         Speed = m_Speed;
