@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Enemy : Mover
 {
-    private float m_Speed = 5f;
+    private float m_Speed = 100f;
 
     private int m_MaxHealth = 100;
     public int HealthPoints { get; private set; }

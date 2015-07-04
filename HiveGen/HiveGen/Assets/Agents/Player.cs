@@ -4,7 +4,7 @@ using System.Collections;
 public class Player : Mover
 {
     private float m_RotationSpeed = 100.0f;
-    private float m_Speed = 10f;
+    private float m_Speed = 100f;
 
     private int m_MaxHealth = 100;
     public int HealthPoints { get; private set; }
@@ -63,6 +63,37 @@ public class Player : Mover
         return false;
     }
 
+    private int m_TimeInsideEnemy;
+    
+    void OnCollisionEnter2D(Collision2D col)
+    {
+        if (col.gameObject.tag == "Enemy")
+        {
+            DecrementHealth(10);
+            m_TimeInsideEnemy = 0;
+        }
+    }
+
+    void OnCollisionStay2D(Collision2D col)
+    {
+        if (col.gameObject.tag == "Enemy")
+        {
+            if (m_TimeInsideEnemy % 100 == 0)
+            {
+                DecrementHealth(5);
+            }
+        }
+        m_TimeInsideEnemy++;
+    }
+
+    void OnCollisionExit2D(Collision2D col)
+    {
+        if (col.gameObject.tag == "Enemy")
+        {
+            m_TimeInsideEnemy = 0;
+        }
+    }
+
     public override void Update()
     {
         //Debug.Log("Moving player");
@@ -77,13 +108,13 @@ public class Player : Mover
         //transform.position += Time.deltaTime * m_Speed * Input.GetAxis("Horizontal") * transform.up;*/
 
         //This code uses WASD
-        
         float translation = Input.GetAxis("Vertical") * m_Speed;
         float rotation = Input.GetAxis("Horizontal") * m_RotationSpeed;
         translation *= Time.deltaTime;
         rotation *= Time.deltaTime;
         transform.Translate(0, translation, 0);
         transform.Rotate(0, 0, -rotation);
+        
     }
 
     public override void Start()
