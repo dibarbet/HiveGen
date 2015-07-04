@@ -3,14 +3,19 @@ using System.Collections;
 
 public class Player : Mover
 {
-    private float m_RotationSpeed = 100.0f;
-    private float m_Speed = 100f;
+    public float m_RotationSpeed = 100.0f;
+    public float m_Speed = 100f;
 
     private int m_MaxHealth = 100;
     public int HealthPoints { get; private set; }
 
     private Collider2D col2D;
     private Rigidbody2D rgdBdy;
+
+	public GameObject shot;
+	public Transform shotSpawn;
+	public float fireRate;
+	private float nextFire;
 
     public bool Die()
     {
@@ -112,7 +117,11 @@ public class Player : Mover
         rotation *= Time.deltaTime;
         transform.Translate(0, translation, 0);
         transform.Rotate(0, 0, -rotation);
-        
+
+		if(Input.GetButton("Fire1") && Time.time > nextFire){
+			nextFire = Time.time + fireRate;
+			Instantiate(shot, shotSpawn.position, shotSpawn.rotation);
+		}
     }
 
     public void Awake()
