@@ -9,16 +9,14 @@ public class Player : Mover
     private int m_MaxHealth = 100;
     public int HealthPoints { get; private set; }
 
-    public GameObject PlayerObject { get; set; }
-
     private Collider2D col2D;
     private Rigidbody2D rgdBdy;
 
     public bool Die()
     {
-        if (PlayerObject != null)
+        if (this.gameObject != null)
         {
-            Object.Destroy(PlayerObject);
+            Object.Destroy(this.gameObject);
             return true;
         }
         return false;
@@ -69,7 +67,7 @@ public class Player : Mover
     {
         if (col.gameObject.tag == "Enemy")
         {
-            DecrementHealth(1);
+            //DecrementHealth(1);
             m_TimeInsideEnemy = 0;
         }
     }
@@ -80,7 +78,7 @@ public class Player : Mover
         {
             if (m_TimeInsideEnemy % 100 == 0)
             {
-                DecrementHealth(1);
+                //DecrementHealth(1);
             }
         }
         m_TimeInsideEnemy++;
@@ -92,13 +90,12 @@ public class Player : Mover
         {
             m_TimeInsideEnemy = 0;
         }
-        rgdBdy.mass = 1;
     }
 
     public override void Update()
     {
         //Debug.Log("Moving player");
-        Position = PlayerObject.transform.position;
+        Position = transform.position;
 
         //This code will make it follow the mouse
         /**
@@ -120,13 +117,12 @@ public class Player : Mover
 
     public void Awake()
     {
-        PlayerObject = this.gameObject;
         Position = transform.position;
         IsMoving = false;
         Speed = m_Speed;
         HealthPoints = m_MaxHealth;
-        col2D = PlayerObject.GetComponent<Collider2D>();
-        rgdBdy = PlayerObject.GetComponent<Rigidbody2D>();
+        col2D = this.gameObject.GetComponent<Collider2D>();
+        rgdBdy = this.gameObject.GetComponent<Rigidbody2D>();
     }
 
 }
