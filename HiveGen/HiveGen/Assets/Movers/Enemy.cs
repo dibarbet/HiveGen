@@ -30,6 +30,7 @@ public class Enemy : Mover
             {
                 HealthPoints -= amt;
             }
+            Debug.Log("Decreasing HP: " + HealthPoints.ToString());
             return true;
         }
         return false;

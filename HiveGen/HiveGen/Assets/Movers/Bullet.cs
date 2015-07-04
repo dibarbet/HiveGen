@@ -34,6 +34,10 @@ public class Bullet : Mover
         {
             Debug.Log("Destroying bullet");
             Object.Destroy(this.gameObject);
+            if (col.gameObject.tag == "Enemy")
+            {
+                col.gameObject.GetComponent<Enemy>().DecrementHealth(10);
+            }
         }
         
     }
