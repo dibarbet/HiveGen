@@ -3,23 +3,19 @@ using System.Collections;
 
 public class Enemy : Mover
 {
-    private float m_Speed = 100f;
+    private float m_Speed = 100.0f;
+    public override float Speed
+    {
+        get { return m_Speed; }
+        set { m_Speed = value; }
+    }
+
 
     private int m_MaxHealth = 100;
     public int HealthPoints { get; private set; }
 
     public GameObject EnemyObject { get; set; }
-
-    //True if operation succeeded
-    public bool Die()
-    {
-        if (EnemyObject != null)
-        {
-            Object.Destroy(EnemyObject);
-            return true;
-        }
-        return false;
-    }
+    
 
     //returns true if operation can succeed.
     public bool DecrementHealth(int amt)
@@ -111,7 +107,6 @@ public class Enemy : Mover
         Player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         Position = this.transform.position;
         IsMoving = false;
-        Speed = m_Speed;
         HealthPoints = m_MaxHealth;
         col2D = EnemyObject.GetComponent<Collider2D>();
         rgdBdy = EnemyObject.gameObject.GetComponent<Rigidbody2D>();
