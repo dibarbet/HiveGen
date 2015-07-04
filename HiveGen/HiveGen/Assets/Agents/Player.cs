@@ -69,7 +69,7 @@ public class Player : Mover
     {
         if (col.gameObject.tag == "Enemy")
         {
-            DecrementHealth(10);
+            DecrementHealth(1);
             m_TimeInsideEnemy = 0;
         }
     }
@@ -80,7 +80,7 @@ public class Player : Mover
         {
             if (m_TimeInsideEnemy % 100 == 0)
             {
-                DecrementHealth(5);
+                DecrementHealth(1);
             }
         }
         m_TimeInsideEnemy++;
@@ -92,6 +92,7 @@ public class Player : Mover
         {
             m_TimeInsideEnemy = 0;
         }
+        rgdBdy.mass = 1;
     }
 
     public override void Update()
@@ -117,7 +118,7 @@ public class Player : Mover
         
     }
 
-    public override void Start()
+    public void Awake()
     {
         PlayerObject = this.gameObject;
         Position = transform.position;
