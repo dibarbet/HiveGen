@@ -8,6 +8,7 @@ public class TestGameManager : MonoBehaviour
 
     public GameObject EnemyObject;
     public GameObject PlayerObject;
+    public GameObject BulletPref;
     public Text HP;
 
     private List<Enemy> enemies;
@@ -19,7 +20,6 @@ public class TestGameManager : MonoBehaviour
         Enemy enemy = EnemyObject.GetComponent<Enemy>();
         enemy.MoveTo(new Vector3(300f, 150f));
         player = PlayerObject.GetComponent<Player>();
-        
 	}
 	
 	// Update is called once per frame

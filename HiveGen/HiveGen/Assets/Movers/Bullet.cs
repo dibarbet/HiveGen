@@ -12,18 +12,28 @@ public class Bullet : Mover
         get { return m_Speed; }
         set { m_Speed = value; }
     }
-
+    Rigidbody2D rgd;
 	// Use this for initialization
+    //To make this work, make the sprite larger.
 	void Start ()
     {
         m_StartTime = Time.time;
+        rgd = this.gameObject.GetComponent<Rigidbody2D>();
 	}
 	
 	// Update is called once per frame
 	void Update ()
     {
-        Rigidbody2D rgd = this.gameObject.GetComponent<Rigidbody2D>();
-        rgd.velocity = transform.up * Speed;
+        Debug.Log("Bullet");
+        if (Time.time - m_StartTime <= 15)
+        {
+            rgd.velocity = transform.up * Speed;
+        }
+        else
+        {
+            Die();
+        }
+        
 	}
 
     //Select is trigger on the collider box, make sure rigid body exists, then use this rather than on collision enter.
@@ -33,12 +43,11 @@ public class Bullet : Mover
         if (col.gameObject.tag != "Player")
         {
             Debug.Log("Destroying bullet");
-            Object.Destroy(this.gameObject);
+            Die();
             if (col.gameObject.tag == "Enemy")
             {
                 col.gameObject.GetComponent<Enemy>().DecrementHealth(10);
             }
         }
-        
     }
 }

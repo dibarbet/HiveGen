@@ -17,6 +17,45 @@ public class Player : Mover
     private Collider2D col2D;
     private Rigidbody2D rgdBdy;
 
+    public GameObject BulletPrefab;
+
+    public void Awake()
+    {
+        Position = transform.position;
+        IsMoving = false;
+        HealthPoints = m_MaxHealth;
+        col2D = this.gameObject.GetComponent<Collider2D>();
+        rgdBdy = this.gameObject.GetComponent<Rigidbody2D>();
+    }
+
+    public override void Update()
+    {
+        Position = transform.position;
+
+        if (Input.GetKeyDown("space"))
+        {
+            //Instantiate at the correct position and rotation
+            var nBullet = GameObject.Instantiate(BulletPrefab, transform.position, transform.rotation);
+            //Ignore collision between this and player.
+            Physics2D.IgnoreCollision(BulletPrefab.GetComponent<Collider2D>(), col2D);
+        }
+        //This code will make it follow the mouse
+        /**
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        transform.rotation = Quaternion.LookRotation(Vector3.forward, mousePos - transform.position);
+
+        transform.position += Time.deltaTime * Speed * Input.GetAxis("Vertical") * transform.up;
+        //transform.position += Time.deltaTime * Speed * Input.GetAxis("Horizontal") * transform.up;*/
+
+        //This code uses WASD
+        float translation = Input.GetAxis("Vertical") * Speed;
+        float rotation = Input.GetAxis("Horizontal") * m_RotationSpeed;
+        translation *= Time.deltaTime;
+        rotation *= Time.deltaTime;
+        transform.Translate(0, translation, 0);
+        transform.Rotate(0, 0, -rotation);
+    }
+
     public bool DecrementHealth(int amt)
     {
         if (amt >= 0)
@@ -86,44 +125,4 @@ public class Player : Mover
             m_TimeInsideEnemy = 0;
         }
     }
-
-    public GameObject BulletPrefab;
-
-    public override void Update()
-    {
-        //Debug.Log("Moving player");
-        Position = transform.position;
-
-        if (Input.GetKeyDown("space"))
-        {
-            var nBullet = GameObject.Instantiate(BulletPrefab, transform.position, transform.rotation);
-            Physics2D.IgnoreCollision(BulletPrefab.GetComponent<Collider2D>(), col2D);
-        }
-        //This code will make it follow the mouse
-        /**
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        transform.rotation = Quaternion.LookRotation(Vector3.forward, mousePos - transform.position);
-
-        transform.position += Time.deltaTime * Speed * Input.GetAxis("Vertical") * transform.up;
-        //transform.position += Time.deltaTime * Speed * Input.GetAxis("Horizontal") * transform.up;*/
-
-        //This code uses WASD
-        float translation = Input.GetAxis("Vertical") * Speed;
-        float rotation = Input.GetAxis("Horizontal") * m_RotationSpeed;
-        translation *= Time.deltaTime;
-        rotation *= Time.deltaTime;
-        transform.Translate(0, translation, 0);
-        transform.Rotate(0, 0, -rotation);
-        
-    }
-
-    public void Awake()
-    {
-        Position = transform.position;
-        IsMoving = false;
-        HealthPoints = m_MaxHealth;
-        col2D = this.gameObject.GetComponent<Collider2D>();
-        rgdBdy = this.gameObject.GetComponent<Rigidbody2D>();
-    }
-
 }
