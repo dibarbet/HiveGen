@@ -168,16 +168,6 @@ public class Player : Mover
 		// }
     // }
 
-    public void Awake()
-    {
-        Position = transform.position;
-        IsMoving = false;
-        Speed = m_Speed;
-        HealthPoints = m_MaxHealth;
-        col2D = this.gameObject.GetComponent<Collider2D>();
-        rgdBdy = this.gameObject.GetComponent<Rigidbody2D>();
-    }
-
 // =======
 // >>>>>>> origin/master:HiveGen/HiveGen/Assets/Movers/Player.cs
 }
