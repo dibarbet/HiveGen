@@ -3,6 +3,7 @@ using System.Collections;
 
 public class GameManager : MonoBehaviour {
 
+	public static GameManager instance = null; //This makes GameManager a singleton, so only one can exist.
 	public BoardManager boardScript;
 
 	private int level = 1;
@@ -10,6 +11,12 @@ public class GameManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Awake () {
+		if(instance == null) //Make sure only one instance of GameManager exists
+			instance = this;
+		else if (instance != this)
+			Destroy(gameObject);
+
+		DontDestroyOnLoad(gameObject); //Allow GameManager to persist when the level changes.
 		boardScript = GetComponent<BoardManager>();
 		InitGame();
 	}
