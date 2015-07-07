@@ -16,6 +16,7 @@ public class TestGameManager : MonoBehaviour
 
 	// Use this for initialization
 	void Start () {
+        Debug.Log("Starting test game manager");
         enemies = new List<Enemy>();
         Enemy enemy = EnemyObject.GetComponent<Enemy>();
         enemy.MoveTo(new Vector3(300f, 150f));

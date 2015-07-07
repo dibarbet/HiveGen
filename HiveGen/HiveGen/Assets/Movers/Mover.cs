@@ -19,6 +19,22 @@ public class Mover : MonoBehaviour
         IsMoving = false;
     }
 
+    private Vector3 prevStart;
+    private Vector3 prevGoal;
+
+    public void PauseMoving()
+    {
+        prevStart = StartPos;
+        prevGoal = GoalPos;
+        GoalPos = transform.position;
+    }
+
+    public void UnPauseMoving()
+    {
+        StartPos = prevStart;
+        GoalPos = prevGoal;
+    }
+
     public virtual bool IsAtGoal()
     {
         float remainingDist = (transform.position - GoalPos).sqrMagnitude;
@@ -48,7 +64,8 @@ public class Mover : MonoBehaviour
 
     public virtual void Start()
     {
-
+        GoalPos = transform.position;
+        StartPos = transform.position;
     }
 
     public virtual void Update()

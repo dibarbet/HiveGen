@@ -6,7 +6,7 @@ public class Bullet : Mover
 
     private float m_StartTime;
 
-    private float m_Speed = 300.0f;
+    private float m_Speed = 10.0f;
     public override float Speed
     {
         get { return m_Speed; }

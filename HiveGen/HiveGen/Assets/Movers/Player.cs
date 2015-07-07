@@ -3,18 +3,13 @@ using System.Collections;
 
 public class Player : Mover
 {
-// <<<<<<< HEAD:HiveGen/HiveGen/Assets/Agents/Player.cs
-    // public float m_RotationSpeed = 100.0f;
-    // public float m_Speed = 100f;
-// =======
     private float m_RotationSpeed = 100.0f;
-    private float m_Speed = 100.0f;
+    private float m_Speed = 2.0f;
     public override float Speed
     {
         get { return m_Speed; }
         set { m_Speed = value; }
     }
-// >>>>>>> origin/master:HiveGen/HiveGen/Assets/Movers/Player.cs
 
     private int m_MaxHealth = 100;
     public int HealthPoints { get; private set; }
@@ -33,7 +28,6 @@ public class Player : Mover
     public GameObject BulletPrefab;
 
     public void Awake()
-// >>>>>>> origin/master:HiveGen/HiveGen/Assets/Movers/Player.cs
     {
         Position = transform.position;
         IsMoving = false;

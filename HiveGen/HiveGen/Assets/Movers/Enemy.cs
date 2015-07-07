@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Enemy : Mover
 {
-    private float m_Speed = 100.0f;
+    private float m_Speed = 5.0f;
     public override float Speed
     {
         get { return m_Speed; }
@@ -43,7 +43,10 @@ public class Enemy : Mover
     //Perhaps trigger animations here?
     public void Attack()
     {
-        Player.DecrementHealth(5);
+        if (Player != null)
+        {
+            Player.DecrementHealth(5);
+        }
     }
 
     //returns true if operation can succeed.
@@ -92,17 +95,32 @@ public class Enemy : Mover
     {
         if (col.gameObject.tag == "Player")
         {
-            this.StopMoving();
+            Debug.Log("Goal before collision: " + GoalPos.ToString());
+            this.PauseMoving();
+            Debug.Log("Goal after collision (should be position): " + GoalPos.ToString());
             InvokeRepeating("Attack", .3f, 1f);
+        }
+        else if (col.gameObject.tag == "Terrain")
+        {
+            Debug.Log("Goal before collision: " + GoalPos.ToString());
+            this.PauseMoving();
+            Debug.Log("Goal after collision (should be position): " + GoalPos.ToString());
         }
     }
 
     void OnCollisionExit2D(Collision2D col)
     {
-        if (col.gameObject.tag == "Player")
+        if (col.gameObject.tag == "Player" || col.gameObject.tag == "Terrain")
         {
-            IsMoving = true;
+            this.UnPauseMoving();
+            Debug.Log("Restored goal after exit collision: " + GoalPos.ToString());
             CancelInvoke("Attack");
+        }
+        else if (col.gameObject.tag == "Terrain")
+        {
+            Debug.Log("Goal before collision: " + GoalPos.ToString());
+            this.PauseMoving();
+            Debug.Log("Goal after collision (should be position): " + GoalPos.ToString());
         }
     }
 }
