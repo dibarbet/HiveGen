@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using AStar;
 
 public class Enemy : Mover
 {
@@ -19,6 +21,8 @@ public class Enemy : Mover
     private Rigidbody2D rgdBdy;
     private Player Player;
 
+    private SpatialAStar<GameManager.SpecialPathNode, System.Object> aStar;
+
     //Use awake, start is not always called at object creation, leading to null reference errors
     public void Awake()
     {
@@ -29,6 +33,13 @@ public class Enemy : Mover
         HealthPoints = m_MaxHealth;
         col2D = EnemyObject.GetComponent<Collider2D>();
         rgdBdy = EnemyObject.gameObject.GetComponent<Rigidbody2D>();
+        aStar = new SpatialAStar<GameManager.SpecialPathNode, System.Object>(GameManager.boardArray);
+        StartPos = transform.position;
+    }
+
+    public override void MoveTo(Vector3 goal)
+    {
+        //LinkedList<GameManager.SpecialPathNode> path = aStar.Search(transform.position.x, transform.y, goal.x, goal.y, null);
     }
 
     public override void Update()
