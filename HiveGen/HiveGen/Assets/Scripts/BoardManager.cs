@@ -16,8 +16,8 @@ public class BoardManager : MonoBehaviour {
 		}
 	}
 
-	public int columns = 10;
-	public int rows = 10;
+	public int columns = 10; //Only used for default map.
+	public int rows = 10; //Only used for default map.
 	public Count obstacleCount = new Count(6,10); //I arbitarily chose 6 and 10 for now, can change this later.
 	public GameObject player;
 	public GameObject exit;
@@ -38,11 +38,12 @@ public class BoardManager : MonoBehaviour {
 			}
 		}
 	}
-	/*
-	 * BoardSetup creates the floor and outer walls of the level and places the exit and enter doors on the 
-	 * upper and lower walls, respectively. If no exitLoc and/or enterLoc is specified, the door
-	 * will be placed at a random horizontal location on the upper/lower wall.
-	 */
+	///*
+	/// BoardSetup creates the floor and outer walls of the level and places the exit and enter doors on the 
+	/// upper and lower walls, respectively. If no exitLoc and/or enterLoc is specified, the door
+	/// will be placed at a random horizontal location on the upper/lower wall.
+	/// NOTE: This function is only used to build the default map.
+	///*
 	GameManager.SpecialPathNode[,] BoardSetup(int exitLoc=-1, int enterLoc=-1){
 		if (exitLoc==-1)
 			exitLoc = Random.Range(0, columns);
@@ -155,14 +156,11 @@ public class BoardManager : MonoBehaviour {
 		return boardArray;
 	}
 
-//	static int[,] RotateMatrixCounterClockwise(int[,] oldMatrix){
-//
-//	}
 
-	/*
-	 * SetupDefaultScene builds a manually determined room with no PCG elements. This is intended to be used
-	 * for testing/debugging purposes only.
-	 */
+	///*
+	/// SetupDefaultScene builds a manually determined room with no PCG elements. This is intended to be used
+	/// for testing/debugging purposes only.
+	///*
     public GameManager.SpecialPathNode[,] SetupDefaultScene(){
         GameManager.SpecialPathNode[,] boardArray = BoardSetup(5, 5);
 		InitializeList();
@@ -177,24 +175,22 @@ public class BoardManager : MonoBehaviour {
 			{0, 0,-1, 0, 0, 0, 0,-1, 0, 0},
 			{0, 0,-1,-1,-1,-1,-1,-1, 0, 0},
 			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},};
-//		for (int i=0; i<10; i++)
-//			print("setupArray["+i+",3]:"+setupArray[i,3]);
+			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
 		boardArray = LayoutBoardFromArray(setupArray, boardArray);
 		return boardArray;
 	}
 
-/*
- * SetupPCGScene builds a procedurally generated room based on the input level. This function is intended
- * for main gameplay use over SetupDefaultScene.
- */
+	///*
+	///SetupPCGScene builds a procedurally generated room based on the input level. This function is intended
+	///for main gameplay use over SetupDefaultScene.
+	///*
     public GameManager.SpecialPathNode[,] SetupPCGScene(int level){
-		generateBlankBlobMap(3);
+		GenerateBlankBlobMap(3);
 		return null;
 	}
 
-	public Vector3 getPlayerStart(GameObject[,] boardArray){
+	public Vector3 GetPlayerStart(GameObject[,] boardArray){
 		for (int row=boardArray.GetLength(0)-1; row>0; row--){
 			for (int col=0; col<boardArray.GetLength(1); col++){
 				if (boardArray[row, col].tag == "Enter")
@@ -204,12 +200,65 @@ public class BoardManager : MonoBehaviour {
 		return new Vector3();
 	}
 
-/////////////////////PROCEDURAL MAP GENERATION FUNCTIONS////////////////////////////////
+/*////////////////////PROCEDURAL MAP GENERATION FUNCTIONS////////////////////////////////*/
 
-	private GameObject[,] generateBlankBlobMap(int area, int optSeed=int.MinValue){
+	GameManager.SpecialPathNode[,] AddWallsAndDoors(GameManager.SpecialPathNode[,] blankMap, int optSeed=int.MinValue){
 		if(optSeed!=int.MinValue)
 			Random.seed = optSeed;
-	
+
+		GameManager.SpecialPathNode[,] walledMap = null;
+
+		return walledMap;
+	}
+
+	class Cell{
+		private bool active = false;
+		public Vector3 location;
+
+		public Cell(Vector3 loc){
+			location = loc;
+		}
+		public void activate(){
+			active = true;
+		}
+		public void deactivate(){
+			active = false;
+		}
+	}
+
+	List<Cell> GetNeighbors(Cell c, Dictionary<Vector3, Cell> activeCells, bool active=false){
+		List<Cell> neighbors = new List<Cell>();
+		for (int i=(int)c.location.x-1; i<(int)c.location.x+2; i++){
+			for (int j=(int)c.location.y-1; i<(int)c.location.y+2; j++){
+				if (i!=0 || j!=0){
+					Vector3 loc = new Vector3(i, j, 0f);
+					if (activeCells.ContainsKey(loc) && active)
+						neighbors.Add(activeCells[loc]);
+					else if (!activeCells.ContainsKey(loc) && !active)
+						neighbors.Add (new Cell(loc));
+				}
+			}
+		}
+		return neighbors;
+	}
+
+	///*
+	/// GenerateBlankBlobMap uses a procedural generation algorithm to create the base floor layout of a map
+	/// with a number of floor tiles equal to the input area.
+	///*
+	GameManager.SpecialPathNode[,] GenerateBlankBlobMap(int area, int optSeed=int.MinValue){
+		if(optSeed!=int.MinValue)
+			Random.seed = optSeed;
+
+		Dictionary<Vector3, Cell> activeCells = new Dictionary<Vector3, Cell>();
+		Vector3 startLoc = new Vector3(0,0,0f);
+		activeCells.Add(startLoc, new Cell(startLoc));
+		int currArea = 1;
+
+		while (currArea < area){
+			List<Cell> toBeActivated = new List<Cell>();
+		}
+
 		return null;
 	}
 }
