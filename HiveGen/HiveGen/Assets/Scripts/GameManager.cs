@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
+using AStar;
 
 public class GameManager : MonoBehaviour {
 
@@ -7,7 +9,7 @@ public class GameManager : MonoBehaviour {
 	public BoardManager boardScript;
 
 	private int level = 1;
-	private GameObject[,] boardArray;
+	public static SpecialPathNode[,] boardArray;
 
 	// Use this for initialization
 	void Awake () {
@@ -19,6 +21,18 @@ public class GameManager : MonoBehaviour {
 		DontDestroyOnLoad(gameObject); //Allow GameManager to persist when the level changes.
 		boardScript = GetComponent<BoardManager>();
 		InitGame();
+        int rowLength = boardArray.GetLength(0);
+        int colLength = boardArray.GetLength(1);
+        string final = "";
+        for (int i = 0; i < rowLength; i++)
+        {
+            for (int j = 0; j < colLength; j++)
+            {
+                final += string.Format("{0} ", boardArray[i, j]);
+            }
+            final += Environment.NewLine + Environment.NewLine;
+        }
+        Debug.Log(final);
 	}
 
 	void InitGame(){
@@ -31,4 +45,29 @@ public class GameManager : MonoBehaviour {
 	void Update () {
 	
 	}
+    
+    public class SpecialPathNode : IPathNode<System.Object>
+    {
+        public Int32 X {get; set;}
+        public Int32 Y {get; set;}
+        public Boolean IsWall {get; set;}
+        public GameObject tile { get; set; }
+
+        public bool IsWalkable(System.Object unused)
+        {
+            return !IsWall;
+        }
+
+        public override string ToString()
+        {
+            if (IsWall)
+            {
+                return "T";
+            }
+            else
+            {
+                return "F";
+            }
+        }
+    }
 }
