@@ -172,6 +172,7 @@ public class BoardManager : MonoBehaviour {
 	 * for main gameplay use over SetupDefaultScene.
 	 */
 	public GameObject[,] SetupPCGScene(int level){
+		generateBlankBlobMap(3);
 		return null;
 	}
 
@@ -183,5 +184,14 @@ public class BoardManager : MonoBehaviour {
 			}
 		}
 		return new Vector3();
+	}
+
+/////////////////////PROCEDURAL MAP GENERATION FUNCTIONS////////////////////////////////
+
+	private GameObject[,] generateBlankBlobMap(int area, int optSeed=int.MinValue){
+		if(optSeed!=int.MinValue)
+			Random.seed = optSeed;
+		
+		return null;
 	}
 }
