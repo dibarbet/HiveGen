@@ -43,14 +43,14 @@ public class BoardManager : MonoBehaviour {
 	 * upper and lower walls, respectively. If no exitLoc and/or enterLoc is specified, the door
 	 * will be placed at a random horizontal location on the upper/lower wall.
 	 */
-	GameObject[,] BoardSetup(int exitLoc=-1, int enterLoc=-1){
+	GameManager.SpecialPathNode[,] BoardSetup(int exitLoc=-1, int enterLoc=-1){
 		if (exitLoc==-1)
 			exitLoc = Random.Range(0, columns);
 		if (enterLoc==-1)
 			enterLoc = Random.Range(0, columns);
 
 		boardHolder = new GameObject("Board").transform;
-		GameObject[,] boardArray = new GameObject[columns+2,rows+2];
+        GameManager.SpecialPathNode[,] boardArray = new GameManager.SpecialPathNode[columns + 2, rows + 2];
 		for (int x=-1; x<columns+1; x++){
 			for (int y=-1; y<rows+1; y++){
 				GameObject toInstantiate = floorTile;
@@ -70,7 +70,12 @@ public class BoardManager : MonoBehaviour {
 
 				GameObject instance = Instantiate(toInstantiate, new Vector3(x,y,0f), Quaternion.identity) as GameObject;
 				instance.transform.SetParent(boardHolder);
-				boardArray[x+1,y+1] = instance;
+                GameManager.SpecialPathNode thisNode = new GameManager.SpecialPathNode();
+                thisNode.X = x+1;
+                thisNode.Y = y+1;
+                thisNode.tile = instance;
+                thisNode.IsWall = true;
+				boardArray[x+1,y+1] = thisNode;
 			}
 		}
 		return boardArray;
@@ -86,11 +91,16 @@ public class BoardManager : MonoBehaviour {
 		return randomPosition;
 	}
 
-	GameObject[,] LayoutObjectAtRandom(GameObject tile, int min, int max, GameObject[,] boardArray){
+	GameObject[,] LayoutObjectAtRandom(GameObject tile, int min, int max, GameObject[,] boardArray, bool IsWall){
 		int objectCount = Random.Range(min, max+1);
 		for (int i=0; i<objectCount; i++){
 			Vector3 randomPosition = RandomPosition();
 			GameObject instance = Instantiate(tile, randomPosition, Quaternion.identity) as GameObject;
+            GameManager.SpecialPathNode thisNode = new GameManager.SpecialPathNode();
+            thisNode.X = (int)(randomPosition.x) + 1;
+            thisNode.Y = (int)(randomPosition.y) + 1;
+            thisNode.tile = instance;
+            thisNode.IsWall = IsWall;
 			boardArray[(int)(randomPosition.x)+1, (int)(randomPosition.y)+1] = instance;
 		}
 		return boardArray;
@@ -107,19 +117,22 @@ public class BoardManager : MonoBehaviour {
 	 * 
 	 * Note: this function does not affect placement of doors or player.
 	 */
-	GameObject[,] LayoutBoardFromArray(int[,] setupArray, GameObject[,] boardArray){
+    GameManager.SpecialPathNode[,] LayoutBoardFromArray(int[,] setupArray, GameManager.SpecialPathNode[,] boardArray)
+    {
 
 		int numRows = setupArray.GetLength(0);
 		int numCols = setupArray.GetLength(1);
 		for (int x=0; x<numCols; x++){
 			for (int y=0; y<numRows; y++){
 				GameObject toInstantiate = null;
+                bool wall = false;
 				switch (setupArray[x,y]){
 				case 0:
 					toInstantiate = floorTile;
 					break;
 				case -1:
 					toInstantiate = obstacleTile;
+                    wall = true;
 					break;
 				case 1:
 					toInstantiate = enemy;
@@ -130,7 +143,12 @@ public class BoardManager : MonoBehaviour {
 				}
 				if (toInstantiate != null){
 					GameObject instance = Instantiate(toInstantiate, new Vector3(y,numRows-1-x,0f), Quaternion.identity) as GameObject;
-					boardArray[x+1,y+1] = instance;
+                    GameManager.SpecialPathNode thisNode = new GameManager.SpecialPathNode();
+                    thisNode.X = x+1;
+                    thisNode.Y = y+1;
+                    thisNode.tile = instance;
+                    thisNode.IsWall = wall;
+					boardArray[x+1,y+1] = thisNode;
 				}
 			}
 		}
@@ -145,8 +163,8 @@ public class BoardManager : MonoBehaviour {
 	 * SetupDefaultScene builds a manually determined room with no PCG elements. This is intended to be used
 	 * for testing/debugging purposes only.
 	 */
-	public GameObject[,] SetupDefaultScene(){
-		GameObject[,] boardArray = BoardSetup (5, 5);
+    public GameManager.SpecialPathNode[,] SetupDefaultScene(){
+        GameManager.SpecialPathNode[,] boardArray = BoardSetup(5, 5);
 		InitializeList();
 
 		int[,] setupArray = new int[10, 10] {
@@ -167,11 +185,11 @@ public class BoardManager : MonoBehaviour {
 		return boardArray;
 	}
 
-	/*
-	 * SetupPCGScene builds a procedurally generated room based on the input level. This function is intended
-	 * for main gameplay use over SetupDefaultScene.
-	 */
-	public GameObject[,] SetupPCGScene(int level){
+/*
+ * SetupPCGScene builds a procedurally generated room based on the input level. This function is intended
+ * for main gameplay use over SetupDefaultScene.
+ */
+    public GameManager.SpecialPathNode[,] SetupPCGScene(int level){
 		generateBlankBlobMap(3);
 		return null;
 	}
@@ -191,7 +209,7 @@ public class BoardManager : MonoBehaviour {
 	private GameObject[,] generateBlankBlobMap(int area, int optSeed=int.MinValue){
 		if(optSeed!=int.MinValue)
 			Random.seed = optSeed;
-		
+	
 		return null;
 	}
 }
