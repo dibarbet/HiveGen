@@ -19,6 +19,7 @@ public class BoardManager : MonoBehaviour {
 	public int columns = 10;
 	public int rows = 10;
 	public Count obstacleCount = new Count(6,10); //I arbitarily chose 6 and 10 for now, can change this later.
+	public GameObject player;
 	public GameObject exit;
 	public GameObject entrance;
 	public GameObject floorTile;
@@ -54,9 +55,10 @@ public class BoardManager : MonoBehaviour {
 			for (int y=-1; y<rows+1; y++){
 				GameObject toInstantiate = floorTile;
 				if (y==-1){
-					if (x==enterLoc)
+					if (x==enterLoc){
 						toInstantiate = entrance;
-					else
+						Instantiate(player, new Vector3(x,y+1,0f), Quaternion.identity);
+					}else
 						toInstantiate = obstacleTile;
 				}else if(y==rows){
 					if (x==exitLoc)
@@ -97,6 +99,7 @@ public class BoardManager : MonoBehaviour {
 	/*
 	 * LayoutBoardFromArray creates the board area inside the outer wall layer according to 
 	 * an input 2D setupArray of int values. The following key should be used for the setup array:
+	 * -2 : empty (for unreachable area)
 	 * -1 : obstacle
 	 * 0  : floor
 	 * 1  : base enemy
@@ -110,8 +113,11 @@ public class BoardManager : MonoBehaviour {
 		int numCols = setupArray.GetLength(1);
 		for (int x=0; x<numCols; x++){
 			for (int y=0; y<numRows; y++){
-				GameObject toInstantiate = floorTile;
+				GameObject toInstantiate = null;
 				switch (setupArray[x,y]){
+				case 0:
+					toInstantiate = floorTile;
+					break;
 				case -1:
 					toInstantiate = obstacleTile;
 					break;
@@ -122,8 +128,10 @@ public class BoardManager : MonoBehaviour {
 					toInstantiate = boss;
 					break;
 				}
-				GameObject instance = Instantiate(toInstantiate, new Vector3(y,numRows-1-x,0f), Quaternion.identity) as GameObject;
-				boardArray[x+1,y+1] = instance;
+				if (toInstantiate != null){
+					GameObject instance = Instantiate(toInstantiate, new Vector3(y,numRows-1-x,0f), Quaternion.identity) as GameObject;
+					boardArray[x+1,y+1] = instance;
+				}
 			}
 		}
 		return boardArray;
@@ -152,8 +160,8 @@ public class BoardManager : MonoBehaviour {
 			{0, 0,-1,-1,-1,-1,-1,-1, 0, 0},
 			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},};
-		for (int i=0; i<10; i++)
-			print("setupArray["+i+",3]:"+setupArray[i,3]);
+//		for (int i=0; i<10; i++)
+//			print("setupArray["+i+",3]:"+setupArray[i,3]);
 
 		boardArray = LayoutBoardFromArray(setupArray, boardArray);
 		return boardArray;
@@ -165,5 +173,15 @@ public class BoardManager : MonoBehaviour {
 	 */
 	public GameObject[,] SetupPCGScene(int level){
 		return null;
+	}
+
+	public Vector3 getPlayerStart(GameObject[,] boardArray){
+		for (int row=boardArray.GetLength(0)-1; row>0; row--){
+			for (int col=0; col<boardArray.GetLength(1); col++){
+				if (boardArray[row, col].tag == "Enter")
+					return boardArray[row-1, col].transform.position;
+			}
+		}
+		return new Vector3();
 	}
 }

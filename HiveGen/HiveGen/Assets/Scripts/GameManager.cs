@@ -25,7 +25,6 @@ public class GameManager : MonoBehaviour {
 		boardArray = boardScript.SetupPCGScene(level);
 		if (boardArray==null)
 			boardArray = boardScript.SetupDefaultScene();
-		
 	}
 	
 	// Update is called once per frame
