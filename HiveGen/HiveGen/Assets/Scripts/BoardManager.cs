@@ -28,6 +28,10 @@ public class BoardManager : MonoBehaviour {
 	public GameObject enemy;
 	public GameObject boss;
 
+    //Since the board is initializing enemies, we need to be able to access all of them.
+    public List<Enemy> Enemies { get; set; }
+    public GameManager.SpecialPathNode PlayerLoc { get; set; }
+
 	private Transform boardHolder;
 	private List <Vector3> gridPositions = new List<Vector3>();
 
@@ -60,6 +64,12 @@ public class BoardManager : MonoBehaviour {
 					if (x==enterLoc){
 						toInstantiate = entrance;
 						Instantiate(player, new Vector3(x,y+1,0f), Quaternion.identity);
+                        Debug.Log("player stuff: " + player.transform.position + ", " + new Vector3(x, y + 1, 0f));
+                        PlayerLoc = new GameManager.SpecialPathNode();
+                        PlayerLoc.X = y + 1 + 1;
+                        PlayerLoc.Y = x;
+                        PlayerLoc.tile = player;
+                        PlayerLoc.IsWall = false;
 					}else
 						toInstantiate = obstacleTile;
 				}else if(y==rows){
@@ -128,6 +138,7 @@ public class BoardManager : MonoBehaviour {
 			for (int y=0; y<numRows; y++){
 				GameObject toInstantiate = null;
                 bool wall = false;
+                bool IsEnemy = false;
 				switch (setupArray[x,y]){
 				case 0:
 					toInstantiate = floorTile;
@@ -138,6 +149,8 @@ public class BoardManager : MonoBehaviour {
 					break;
 				case 1:
 					toInstantiate = enemy;
+                    wall = true;
+                    IsEnemy = true;
 					break;
 				case 2:
 					toInstantiate = boss;
@@ -145,6 +158,17 @@ public class BoardManager : MonoBehaviour {
 				}
 				if (toInstantiate != null){
 					GameObject instance = Instantiate(toInstantiate, new Vector3(y,numRows-1-x,0f), Quaternion.identity) as GameObject;
+                    if (IsEnemy)
+                    {
+                        Enemy thisEnemy = instance.GetComponent<Enemy>();
+                        if (Enemies == null)
+                        {
+                            Enemies = new List<Enemy>();
+                        }
+                        Enemies.Add(thisEnemy);
+                        thisEnemy.TileX = x + 1;
+                        thisEnemy.TileY = y + 1;
+                    }
                     GameManager.SpecialPathNode thisNode = new GameManager.SpecialPathNode();
                     thisNode.X = x+1;
                     thisNode.Y = y+1;

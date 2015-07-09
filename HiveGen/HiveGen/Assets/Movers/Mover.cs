@@ -35,9 +35,9 @@ public class Mover : MonoBehaviour
         GoalPos = prevGoal;
     }
 
-    public virtual bool IsAtGoal()
+    public virtual bool IsAtGoal(Vector3 goal)
     {
-        float remainingDist = (transform.position - GoalPos).sqrMagnitude;
+        float remainingDist = (transform.position - goal).sqrMagnitude;
         if (remainingDist < float.Epsilon)
         {
             return true;

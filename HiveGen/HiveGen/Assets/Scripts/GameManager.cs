@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using AStar;
 
 public class GameManager : MonoBehaviour {
@@ -10,6 +11,9 @@ public class GameManager : MonoBehaviour {
 
 	private int level = 1;
 	public static SpecialPathNode[,] boardArray;
+
+    private List<Enemy> enemies;
+    private SpecialPathNode PlayerLocation;
 
 	// Use this for initialization
 	void Awake () {
@@ -23,6 +27,20 @@ public class GameManager : MonoBehaviour {
 		InitGame();
         int rowLength = boardArray.GetLength(0);
         int colLength = boardArray.GetLength(1);
+        //Access enemies
+        enemies = boardScript.Enemies;
+        PlayerLocation = boardScript.PlayerLoc;
+        if (enemies != null)
+        {
+            foreach (Enemy e in enemies)
+            {
+                e.InstantiateAStar(boardArray);
+                bool success = e.MoveToTile(PlayerLocation);
+                Debug.Log("Found Path: " + success);
+            }
+        }
+        
+        //Prints grid in readable way
         string final = "";
         for (int i = 0; i < rowLength; i++)
         {
@@ -36,7 +54,7 @@ public class GameManager : MonoBehaviour {
 	}
 
 	void InitGame(){
-		boardArray = boardScript.SetupPCGScene(level);
+		//boardArray = boardScript.SetupPCGScene(level);
 		if (boardArray==null)
 			boardArray = boardScript.SetupDefaultScene();
 	}
@@ -62,11 +80,11 @@ public class GameManager : MonoBehaviour {
         {
             if (IsWall)
             {
-                return "T";
+                return "(" + String.Format("{0:00}", X) + ", " + String.Format("{0:00}", Y) + "), " + "T" + "  ||  ";
             }
             else
             {
-                return "F";
+                return "(" + String.Format("{0:00}", X) + ", " + String.Format("{0:00}", Y) + "), " + "F" + "  ||  ";
             }
         }
     }

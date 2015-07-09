@@ -24,7 +24,7 @@ public class Bullet : Mover
 	// Update is called once per frame
 	void Update ()
     {
-        Debug.Log("Bullet");
+        //Debug.Log("Bullet");
         if (Time.time - m_StartTime <= 15)
         {
             rgd.velocity = transform.up * Speed;
@@ -42,7 +42,7 @@ public class Bullet : Mover
     {
         if (col.gameObject.tag != "Player")
         {
-            Debug.Log("Destroying bullet");
+            //Debug.Log("Destroying bullet");
             Die();
             if (col.gameObject.tag == "Enemy")
             {

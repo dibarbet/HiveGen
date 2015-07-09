@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using AStar;
 
 public class Enemy : Mover
 {
-    private float m_Speed = 5.0f;
+    private float m_Speed = 1.0f;
     public override float Speed
     {
         get { return m_Speed; }
@@ -21,7 +22,13 @@ public class Enemy : Mover
     private Rigidbody2D rgdBdy;
     private Player Player;
 
+    public int TileX { get; set; }
+    public int TileY { get; set; }
+
     private SpatialAStar<GameManager.SpecialPathNode, System.Object> aStar;
+    private LinkedList<GameManager.SpecialPathNode> path;
+    private LinkedListNode<GameManager.SpecialPathNode> CurrentGoalNode;
+    private LinkedListNode<GameManager.SpecialPathNode> FinalGoalNode;
 
     //Use awake, start is not always called at object creation, leading to null reference errors
     public void Awake()
@@ -33,18 +40,65 @@ public class Enemy : Mover
         HealthPoints = m_MaxHealth;
         col2D = EnemyObject.GetComponent<Collider2D>();
         rgdBdy = EnemyObject.gameObject.GetComponent<Rigidbody2D>();
-        aStar = new SpatialAStar<GameManager.SpecialPathNode, System.Object>(GameManager.boardArray);
         StartPos = transform.position;
     }
 
-    public override void MoveTo(Vector3 goal)
+    public void InstantiateAStar(GameManager.SpecialPathNode[,] board)
     {
-        //LinkedList<GameManager.SpecialPathNode> path = aStar.Search(transform.position.x, transform.y, goal.x, goal.y, null);
+        aStar = new SpatialAStar<GameManager.SpecialPathNode, System.Object>(board);
+    }
+
+    public bool MoveToTile(GameManager.SpecialPathNode tile)
+    {
+        path = aStar.Search(TileX, TileY, tile.X, tile.Y, null);
+        Debug.Log("Enemy: " + TileX + ", " + TileY + "; Player: " + tile.X + ", " + tile.Y);
+        if (path != null && path.Count > 0)
+        {
+            IsMoving = true;
+            GoalPos = path.First.Value.tile.transform.position;
+            CurrentGoalNode = path.First;
+            FinalGoalNode = path.Last;
+            LinkedListNode<GameManager.SpecialPathNode> next = path.First;
+            string pathStr = "";
+            while (next != null)
+            {
+                pathStr += "(" + next.Value.X + ", " + next.Value.Y + "); ";
+                next = next.Next;
+            }
+            Debug.Log(pathStr);
+            return true;
+        }
+        return false;
+    }
+
+    private void MoveToNode(LinkedListNode<GameManager.SpecialPathNode> node)
+    {
+        if (node != null)
+        {
+            CurrentGoalNode = node;
+            GoalPos = node.Value.tile.transform.position;
+        }
+        
     }
 
     public override void Update()
     {
         Position = transform.position;
+        if ((CurrentGoalNode != null) && IsAtGoal(CurrentGoalNode.Value.tile.transform.position))
+        {
+            LinkedListNode<GameManager.SpecialPathNode> next = CurrentGoalNode.Next;
+            if (next == null)
+            {
+                Debug.Log("Final node found");
+                //end of list
+                IsMoving = false;
+            }
+            else
+            {
+                MoveToNode(next);
+            }
+        }
+        
         if (IsMoving)
         {
             transform.position = Vector3.MoveTowards(transform.position, GoalPos, Speed * Time.deltaTime);
@@ -106,16 +160,17 @@ public class Enemy : Mover
     {
         if (col.gameObject.tag == "Player")
         {
-            Debug.Log("Goal before collision: " + GoalPos.ToString());
-            this.PauseMoving();
-            Debug.Log("Goal after collision (should be position): " + GoalPos.ToString());
+            //Debug.Log("Goal before collision: " + GoalPos.ToString());
+            //this.PauseMoving();
+            //Debug.Log("Goal after collision (should be position): " + GoalPos.ToString());
             InvokeRepeating("Attack", .3f, 1f);
         }
         else if (col.gameObject.tag == "Terrain")
         {
-            Debug.Log("Goal before collision: " + GoalPos.ToString());
-            this.PauseMoving();
-            Debug.Log("Goal after collision (should be position): " + GoalPos.ToString());
+            Physics2D.IgnoreCollision(col.collider, col2D);
+            //Debug.Log("Goal before collision: " + GoalPos.ToString());
+            //this.PauseMoving();
+            //Debug.Log("Goal after collision (should be position): " + GoalPos.ToString());
         }
     }
 
@@ -123,15 +178,16 @@ public class Enemy : Mover
     {
         if (col.gameObject.tag == "Player" || col.gameObject.tag == "Terrain")
         {
-            this.UnPauseMoving();
-            Debug.Log("Restored goal after exit collision: " + GoalPos.ToString());
+            //this.UnPauseMoving();
+            //Debug.Log("Restored goal after exit collision: " + GoalPos.ToString());
             CancelInvoke("Attack");
         }
         else if (col.gameObject.tag == "Terrain")
         {
-            Debug.Log("Goal before collision: " + GoalPos.ToString());
-            this.PauseMoving();
-            Debug.Log("Goal after collision (should be position): " + GoalPos.ToString());
+            //Debug.Log("Goal before collision: " + GoalPos.ToString());
+            //this.PauseMoving();
+            //Debug.Log("Goal after collision (should be position): " + GoalPos.ToString());
         }
+        MoveToNode(CurrentGoalNode);
     }
 }
