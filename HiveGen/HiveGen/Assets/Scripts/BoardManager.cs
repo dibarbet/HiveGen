@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
+using System.Linq;
 
 public class BoardManager : MonoBehaviour {
 
@@ -186,8 +187,12 @@ public class BoardManager : MonoBehaviour {
 	///for main gameplay use over SetupDefaultScene.
 	///*
     public GameManager.SpecialPathNode[,] SetupPCGScene(int level){
-		GenerateBlankBlobMap(3);
-		return null;
+		GameManager.SpecialPathNode[,] blankMap = GenerateBlankBlobMap(200);
+		foreach (GameManager.SpecialPathNode node in blankMap){
+			if(node!=null)
+				Instantiate(node.tile, new Vector3(node.X, node.Y, 0f), Quaternion.identity);
+		}
+		return blankMap;
 	}
 
 	public Vector3 GetPlayerStart(GameObject[,] boardArray){
@@ -229,13 +234,13 @@ public class BoardManager : MonoBehaviour {
 	List<Cell> GetNeighbors(Cell c, Dictionary<Vector3, Cell> activeCells, bool active=false){
 		List<Cell> neighbors = new List<Cell>();
 		for (int i=(int)c.location.x-1; i<(int)c.location.x+2; i++){
-			for (int j=(int)c.location.y-1; i<(int)c.location.y+2; j++){
+			for (int j=(int)c.location.y-1; j<(int)c.location.y+2; j++){
 				if (i!=0 || j!=0){
 					Vector3 loc = new Vector3(i, j, 0f);
 					if (activeCells.ContainsKey(loc) && active)
 						neighbors.Add(activeCells[loc]);
 					else if (!activeCells.ContainsKey(loc) && !active)
-						neighbors.Add (new Cell(loc));
+						neighbors.Add(new Cell(loc));
 				}
 			}
 		}
@@ -243,8 +248,8 @@ public class BoardManager : MonoBehaviour {
 	}
 
 	///*
-	/// GenerateBlankBlobMap uses a procedural generation algorithm to create the base floor layout of a map
-	/// with a number of floor tiles equal to the input area.
+	/// GenerateBlankBlobMap uses a procedural generation algorithm (cell automaton) to create the 
+	/// base floor layout of a map with a number of floor tiles equal to the input area.
 	///*
 	GameManager.SpecialPathNode[,] GenerateBlankBlobMap(int area, int optSeed=int.MinValue){
 		if(optSeed!=int.MinValue)
@@ -255,10 +260,59 @@ public class BoardManager : MonoBehaviour {
 		activeCells.Add(startLoc, new Cell(startLoc));
 		int currArea = 1;
 
+		
+		List<Cell> toBeActivated = new List<Cell>();
 		while (currArea < area){
-			List<Cell> toBeActivated = new List<Cell>();
+			toBeActivated.Clear();
+			List<Cell> allActive = activeCells.Values.ToList();
+			for (int i=0; i<allActive.Count; i++){
+				List<Cell> neighbors = GetNeighbors(allActive[i], activeCells, false);
+				if (neighbors.Count<=3 && neighbors.Count>0){ //If this active cell has 3 or more active neighbors, add one randomly.
+					toBeActivated.Add(neighbors[Random.Range(0,neighbors.Count)]); //Get a random inactive neighbor and set it to be active on the next generation.
+				}
+			}
+			if (toBeActivated.Count==0){
+				List<Cell> neighbors = GetNeighbors(allActive[Random.Range(0,allActive.Count)], activeCells, false);
+				if(neighbors.Count>0)
+					toBeActivated.Add(neighbors[Random.Range(0,neighbors.Count)]);
+			}
+			for (int j=0; j<toBeActivated.Count; j++){
+				Cell c = toBeActivated[j];
+				if (!activeCells.ContainsKey(c.location)){
+					c.activate();
+					activeCells.Add(c.location, c);
+					currArea++;
+				}
+			}
 		}
 
-		return null;
+		////Now there is a dictionary full of cells to be turned into floor tiles, create the output array.
+		//First, figure out how big the 2d array needs to be to contain the map, then create the empty array.
+		List<Vector3> sortByX = activeCells.Keys.ToList();
+		sortByX.Sort((a, b) => a.x.CompareTo(b.x));
+//		for (int i=0; i<sortByX.Count; i++)
+//			print (sortByX[i]);
+		int minX = (int)sortByX[0].x;
+		int numCols = (int)sortByX[sortByX.Count-1].x - minX + 1;
+		List<Vector3> sortByY = activeCells.Keys.ToList();
+		sortByY.Sort((a, b) => a.y.CompareTo(b.y));
+		int minY = (int)sortByY[0].y;
+		int numRows = (int)sortByY[sortByY.Count-1].y - minY + 1;
+		GameManager.SpecialPathNode[,] blankMap = new GameManager.SpecialPathNode[numRows,numCols];
+
+		//Now convert the cells to the correct data type and fill the array.
+		List<Cell> cells = activeCells.Values.ToList();
+		for (int k=0; k<cells.Count; k++){
+			GameManager.SpecialPathNode node = new GameManager.SpecialPathNode();
+			int x = (int)cells[k].location.x;
+			int y = (int)cells[k].location.y;
+			node.X = x;
+			node.Y = y;
+			node.tile = floorTile;
+			node.IsWall = false;
+
+			blankMap[y-minY,x-minX] = node;
+		}
+		return blankMap;
 	}
 }
