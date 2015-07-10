@@ -32,7 +32,13 @@ public class GameManager : MonoBehaviour {
         int colLength = boardArray.GetLength(1);
         //Access enemies
         enemies = boardScript.Enemies;
-        
+        if (enemies != null)
+        {
+            foreach (Enemy e in enemies)
+            {
+                e.InstantiateAStar(boardArray);
+            }
+        }
         //Prints grid in readable way
         string final = "";
         for (int i = 0; i < rowLength; i++)
@@ -71,6 +77,7 @@ public class GameManager : MonoBehaviour {
         Debug.Log(player.transform.position);
         if (PlayerLocation != PreviousPlayerLocation)
         {
+            PreviousPlayerLocation = PlayerLocation;
             PathToPlayer();
         }
 	}
@@ -81,7 +88,6 @@ public class GameManager : MonoBehaviour {
         {
             foreach (Enemy e in enemies)
             {
-                e.InstantiateAStar(boardArray);
                 bool success = e.MoveToTile(PlayerLocation);
                 Debug.Log("Found Path: " + success);
             }
