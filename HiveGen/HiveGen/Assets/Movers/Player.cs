@@ -18,6 +18,7 @@ public class Player : Mover
     private Collider2D col2D;
     private Rigidbody2D rgdBdy;
 
+
 // <<<<<<< HEAD:HiveGen/HiveGen/Assets/Agents/Player.cs
 	// public GameObject shot;
 	// public Transform shotSpawn;
@@ -30,6 +31,7 @@ public class Player : Mover
 
     public void Awake()
     {
+        Debug.Log("Instantiating Player");
         Position = transform.position;
         IsMoving = false;
         HealthPoints = m_MaxHealth;
@@ -40,7 +42,7 @@ public class Player : Mover
     public override void Update()
     {
         Position = transform.position;
-
+        Debug.Log(Position);
         if (Input.GetKeyDown("space"))
         {
             //Instantiate at the correct position and rotation
@@ -64,6 +66,8 @@ public class Player : Mover
         transform.Translate(0, translation, 0);
         transform.Rotate(0, 0, -rotation);
     }
+
+    
 
     public bool DecrementHealth(int amt)
     {

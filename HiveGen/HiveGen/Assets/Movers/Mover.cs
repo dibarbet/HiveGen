@@ -35,6 +35,19 @@ public class Mover : MonoBehaviour
         GoalPos = prevGoal;
     }
 
+    public GameManager.SpecialPathNode GetTileOn()
+    {
+        GameManager.SpecialPathNode[,] board = GameManager.boardArray;
+        foreach (GameManager.SpecialPathNode node in board)
+        {
+            if (node.tile.GetComponent<Collider2D>().bounds.Contains(transform.position))
+            {
+                return node;
+            }
+        }
+        return null;
+    }
+
     public virtual bool IsAtGoal(Vector3 goal)
     {
         float remainingDist = (transform.position - goal).sqrMagnitude;

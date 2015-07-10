@@ -14,6 +14,9 @@ public class GameManager : MonoBehaviour {
 
     private List<Enemy> enemies;
     private SpecialPathNode PlayerLocation;
+    private SpecialPathNode PreviousPlayerLocation;
+    private Player player;
+
 
 	// Use this for initialization
 	void Awake () {
@@ -29,16 +32,6 @@ public class GameManager : MonoBehaviour {
         int colLength = boardArray.GetLength(1);
         //Access enemies
         enemies = boardScript.Enemies;
-        PlayerLocation = boardScript.PlayerLoc;
-        if (enemies != null)
-        {
-            foreach (Enemy e in enemies)
-            {
-                e.InstantiateAStar(boardArray);
-                bool success = e.MoveToTile(PlayerLocation);
-                Debug.Log("Found Path: " + success);
-            }
-        }
         
         //Prints grid in readable way
         string final = "";
@@ -53,6 +46,12 @@ public class GameManager : MonoBehaviour {
         Debug.Log(final);
 	}
 
+    void Start()
+    {
+        player = FindObjectOfType<Player>();
+        PlayerLocation = player.GetComponent<Player>().GetTileOn();
+    }
+
 	void InitGame(){
 		//boardArray = boardScript.SetupPCGScene(level);
 		if (boardArray==null)
@@ -61,8 +60,33 @@ public class GameManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	
+        if (PreviousPlayerLocation == null)
+        {
+            PreviousPlayerLocation = PlayerLocation;
+            PathToPlayer();
+        }
+        PlayerLocation = player.GetComponent<Player>().GetTileOn();
+        
+        Debug.Log("GameManager Player Location: " + PlayerLocation.X + ", " + PlayerLocation.Y);
+        Debug.Log(player.transform.position);
+        if (PlayerLocation != PreviousPlayerLocation)
+        {
+            PathToPlayer();
+        }
 	}
+
+    private void PathToPlayer()
+    {
+        if (enemies != null)
+        {
+            foreach (Enemy e in enemies)
+            {
+                e.InstantiateAStar(boardArray);
+                bool success = e.MoveToTile(PlayerLocation);
+                Debug.Log("Found Path: " + success);
+            }
+        }
+    }
     
     public class SpecialPathNode : IPathNode<System.Object>
     {
@@ -88,4 +112,5 @@ public class GameManager : MonoBehaviour {
             }
         }
     }
+
 }

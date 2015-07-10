@@ -83,6 +83,9 @@ public class Enemy : Mover
 
     public override void Update()
     {
+        GameManager.SpecialPathNode cur = GetTileOn();
+        TileX = cur.X;
+        TileY = cur.Y;
         Position = transform.position;
         if ((CurrentGoalNode != null) && IsAtGoal(CurrentGoalNode.Value.tile.transform.position))
         {

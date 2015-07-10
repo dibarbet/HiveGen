@@ -30,7 +30,6 @@ public class BoardManager : MonoBehaviour {
 
     //Since the board is initializing enemies, we need to be able to access all of them.
     public List<Enemy> Enemies { get; set; }
-    public GameManager.SpecialPathNode PlayerLoc { get; set; }
 
 	private Transform boardHolder;
 	private List <Vector3> gridPositions = new List<Vector3>();
@@ -64,12 +63,13 @@ public class BoardManager : MonoBehaviour {
 					if (x==enterLoc){
 						toInstantiate = entrance;
 						Instantiate(player, new Vector3(x,y+1,0f), Quaternion.identity);
-                        Debug.Log("player stuff: " + player.transform.position + ", " + new Vector3(x, y + 1, 0f));
+                        /**
+                        Debug.Log("player stuff: " + player.transform.position + ", " + new Vector3(x, y + 1, 0f) + ", " + (y + 1 + 1) + ", " + (x));
                         PlayerLoc = new GameManager.SpecialPathNode();
-                        PlayerLoc.X = y + 1 + 1;
-                        PlayerLoc.Y = x;
+                        PlayerLoc.X = x + 1;
+                        PlayerLoc.Y = y + 1 + 1;
                         PlayerLoc.tile = player;
-                        PlayerLoc.IsWall = false;
+                        PlayerLoc.IsWall = false;*/
 					}else
 						toInstantiate = obstacleTile;
 				}else if(y==rows){
