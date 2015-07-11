@@ -40,7 +40,7 @@ public class Bullet : Mover
     //This prevents wacky physics
     void OnTriggerEnter2D(Collider2D col)
     {
-        if (col.gameObject.tag != "Player")
+        if (col.gameObject.tag != "Player" && col.gameObject.tag != "Floor")
         {
             //Debug.Log("Destroying bullet");
             Die();

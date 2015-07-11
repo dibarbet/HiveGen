@@ -50,7 +50,7 @@ public class Enemy : Mover
     public bool MoveToTile(GameManager.SpecialPathNode tile)
     {
         path = aStar.Search(TileX, TileY, tile.X, tile.Y, null);
-        Debug.Log("Enemy: " + TileX + ", " + TileY + "; Player: " + tile.X + ", " + tile.Y);
+        //Debug.Log("Enemy: " + TileX + ", " + TileY + "; Player: " + tile.X + ", " + tile.Y);
         if (path != null && path.Count > 0)
         {
             IsMoving = true;
@@ -63,7 +63,7 @@ public class Enemy : Mover
                 pathStr += "(" + next.Value.X + ", " + next.Value.Y + "); ";
                 next = next.Next;
             }
-            Debug.Log(pathStr);
+            //Debug.Log(pathStr);
             return true;
         }
         return false;
@@ -89,7 +89,7 @@ public class Enemy : Mover
             LinkedListNode<GameManager.SpecialPathNode> next = CurrentGoalNode.Next;
             if (next == null)
             {
-                Debug.Log("Final node found");
+                //Debug.Log("Final node found");
                 //end of list
                 IsMoving = false;
             }
@@ -116,6 +116,7 @@ public class Enemy : Mover
     //Perhaps trigger animations here?
     public void Attack()
     {
+        Debug.Log("ATTACK!");
         if (Player != null)
         {
             Player.DecrementHealth(5);
@@ -164,14 +165,26 @@ public class Enemy : Mover
         return false;
     }
 
+    private bool attacking = false;
+
     void OnCollisionEnter2D(Collision2D col)
     {
+        //Ignore collisions between enemies
+        if (col.gameObject.tag == "Enemy")
+        {
+            Physics2D.IgnoreCollision(col.gameObject.GetComponent<Collider2D>(), col2D);
+        }
         if (col.gameObject.tag == "Player")
         {
             //Debug.Log("Goal before collision: " + GoalPos.ToString());
             //this.PauseMoving();
             //Debug.Log("Goal after collision (should be position): " + GoalPos.ToString());
-            InvokeRepeating("Attack", .3f, 1f);
+            if (!attacking)
+            {
+                InvokeRepeating("Attack", .1f, .5f);
+                attacking = true;
+            }
+            
         }
         else if (col.gameObject.tag == "Terrain")
         {
