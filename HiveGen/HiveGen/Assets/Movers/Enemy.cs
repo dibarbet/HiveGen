@@ -28,7 +28,6 @@ public class Enemy : Mover
     private SpatialAStar<GameManager.SpecialPathNode, System.Object> aStar;
     private LinkedList<GameManager.SpecialPathNode> path;
     private LinkedListNode<GameManager.SpecialPathNode> CurrentGoalNode;
-    private LinkedListNode<GameManager.SpecialPathNode> FinalGoalNode;
 
     //Use awake, start is not always called at object creation, leading to null reference errors
     public void Awake()
@@ -57,7 +56,6 @@ public class Enemy : Mover
             IsMoving = true;
             GoalPos = path.First.Value.tile.transform.position;
             CurrentGoalNode = path.First;
-            FinalGoalNode = path.Last;
             LinkedListNode<GameManager.SpecialPathNode> next = path.First;
             string pathStr = "";
             while (next != null)
@@ -75,6 +73,7 @@ public class Enemy : Mover
     {
         if (node != null)
         {
+            IsMoving = true;
             CurrentGoalNode = node;
             GoalPos = node.Value.tile.transform.position;
         }
@@ -86,8 +85,7 @@ public class Enemy : Mover
         Position = transform.position;
         if ((CurrentGoalNode != null) && IsAtGoal(CurrentGoalNode.Value.tile.transform.position))
         {
-            TileX = CurrentGoalNode.Value.X;
-            TileY = CurrentGoalNode.Value.Y;
+            
             LinkedListNode<GameManager.SpecialPathNode> next = CurrentGoalNode.Next;
             if (next == null)
             {
@@ -100,9 +98,17 @@ public class Enemy : Mover
                 MoveToNode(next);
             }
         }
-        
+        else
+        {
+            if (CurrentGoalNode != null)
+            {
+                TileX = CurrentGoalNode.Value.X;
+                TileY = CurrentGoalNode.Value.Y;
+            }
+        }
         if (IsMoving)
         {
+            //Debug.Log("goal: " + GoalPos);
             transform.position = Vector3.MoveTowards(transform.position, GoalPos, Speed * Time.deltaTime);
         }
     }
