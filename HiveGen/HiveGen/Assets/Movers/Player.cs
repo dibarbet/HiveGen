@@ -42,7 +42,6 @@ public class Player : Mover
     public override void Update()
     {
         Position = transform.position;
-        Debug.Log(Position);
         if (Input.GetKeyDown("space"))
         {
             //Instantiate at the correct position and rotation

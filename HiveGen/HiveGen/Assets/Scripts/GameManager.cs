@@ -32,6 +32,7 @@ public class GameManager : MonoBehaviour {
         int colLength = boardArray.GetLength(1);
         //Access enemies
         enemies = boardScript.Enemies;
+        //Instantiate their search space
         if (enemies != null)
         {
             foreach (Enemy e in enemies)
@@ -54,6 +55,7 @@ public class GameManager : MonoBehaviour {
 
     void Start()
     {
+        //Get player location
         player = FindObjectOfType<Player>();
         PlayerLocation = player.GetComponent<Player>().GetTileOn();
     }
@@ -73,12 +75,12 @@ public class GameManager : MonoBehaviour {
         }
         PlayerLocation = player.GetComponent<Player>().GetTileOn();
         
-        Debug.Log("GameManager Player Location: " + PlayerLocation.X + ", " + PlayerLocation.Y);
-        Debug.Log(player.transform.position);
+        //Debug.Log("GameManager Player Location: " + PlayerLocation.X + ", " + PlayerLocation.Y);
+        //Debug.Log(player.transform.position);
         if (PlayerLocation != PreviousPlayerLocation)
         {
-            PreviousPlayerLocation = PlayerLocation;
             PathToPlayer();
+            PreviousPlayerLocation = PlayerLocation;
         }
 	}
 
@@ -89,7 +91,7 @@ public class GameManager : MonoBehaviour {
             foreach (Enemy e in enemies)
             {
                 bool success = e.MoveToTile(PlayerLocation);
-                Debug.Log("Found Path: " + success);
+                //Debug.Log("Found Path: " + success);
             }
         }
     }

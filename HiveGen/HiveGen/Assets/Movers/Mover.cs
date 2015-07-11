@@ -40,7 +40,7 @@ public class Mover : MonoBehaviour
         GameManager.SpecialPathNode[,] board = GameManager.boardArray;
         foreach (GameManager.SpecialPathNode node in board)
         {
-            if (node.tile.GetComponent<Collider2D>().bounds.Contains(transform.position))
+            if (node.tile.GetComponent<Collider2D>().bounds.Contains(this.transform.position))
             {
                 return node;
             }
