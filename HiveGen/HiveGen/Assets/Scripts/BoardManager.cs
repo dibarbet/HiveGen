@@ -120,7 +120,7 @@ public class BoardManager : MonoBehaviour {
 
 	/*
 	 * LayoutBoardFromArray creates the board area inside the outer wall layer according to 
-	 * an input 2D setupArray of int values. The following key should be used for the setup array:
+	 * an input 2D setupArray[x,y] of int values. The following key should be used for the setup array:
 	 * -2 : empty (for unreachable area)
 	 * -1 : obstacle
 	 * 0  : floor
@@ -134,12 +134,12 @@ public class BoardManager : MonoBehaviour {
 
 		int numRows = setupArray.GetLength(0);
 		int numCols = setupArray.GetLength(1);
-		for (int x=0; x<numCols; x++){
-			for (int y=0; y<numRows; y++){
+		for (int c=0; c<numCols; c++){
+			for (int r=0; r<numRows; r++){
 				GameObject toInstantiate = null;
                 bool wall = false;
                 bool IsEnemy = false;
-				switch (setupArray[x,y]){
+				switch (setupArray[c,r]){
 				case 0:
 					toInstantiate = floorTile;
 					break;
@@ -157,7 +157,8 @@ public class BoardManager : MonoBehaviour {
 					break;
 				}
 				if (toInstantiate != null){
-					GameObject instance = Instantiate(toInstantiate, new Vector3(y,numRows-1-x,0f), Quaternion.identity) as GameObject;
+					GameObject instance = Instantiate(toInstantiate, new Vector3(c,r,0f), Quaternion.identity) as GameObject;//r,numRows-1-c,0f), Quaternion.identity) as GameObject;
+					instance.transform.SetParent(boardHolder);
                     if (IsEnemy)
                     {
                         Enemy thisEnemy = instance.GetComponent<Enemy>();
@@ -166,21 +167,32 @@ public class BoardManager : MonoBehaviour {
                             Enemies = new List<Enemy>();
                         }
                         Enemies.Add(thisEnemy);
-                        thisEnemy.TileX = x + 1;
-                        thisEnemy.TileY = y + 1;
+                        thisEnemy.TileX = c + 1;
+                        thisEnemy.TileY = r + 1;
                     }
                     GameManager.SpecialPathNode thisNode = new GameManager.SpecialPathNode();
-                    thisNode.X = x+1;
-                    thisNode.Y = y+1;
+                    thisNode.X = c+1;
+                    thisNode.Y = r+1;
                     thisNode.tile = instance;
                     thisNode.IsWall = wall;
-					boardArray[x+1,y+1] = thisNode;
+					boardArray[c+1,r+1] = thisNode;
 				}
 			}
 		}
 		return boardArray;
 	}
 
+	T[,] rotateArrayCW<T>(T[,] inArray){
+		int outRows = inArray.GetLength(1); //Number of rows in output is number of cols in input.
+		int outCols = inArray.GetLength(0); //Number of cols in output is number of rows in input.
+		T[,] outArray = new T[outRows,outCols];
+		for (int r=0; r<outRows; r++){
+			for (int c=0; c<outCols; c++){
+				outArray[r,c] = inArray[outRows-c-1,r];
+			}
+		}
+		return outArray;
+	}
 
 	///*
 	/// SetupDefaultScene builds a manually determined room with no PCG elements. This is intended to be used
@@ -201,7 +213,7 @@ public class BoardManager : MonoBehaviour {
 			{0, 0,-1,-1,-1,-1,-1,-1, 0, 0},
 			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-
+		setupArray = rotateArrayCW(setupArray);
 		boardArray = LayoutBoardFromArray(setupArray, boardArray);
 		return boardArray;
 	}
@@ -210,20 +222,38 @@ public class BoardManager : MonoBehaviour {
 	///SetupPCGScene builds a procedurally generated room based on the input level. This function is intended
 	///for main gameplay use over SetupDefaultScene.
 	///*
-    public GameManager.SpecialPathNode[,] SetupPCGScene(int level){
-		GameManager.SpecialPathNode[,] blankMap = GenerateBlankBlobMap(200);
-		foreach (GameManager.SpecialPathNode node in blankMap){
-			if(node!=null)
-				Instantiate(node.tile, new Vector3(node.X, node.Y, 0f), Quaternion.identity);
+    public GameManager.SpecialPathNode[,] SetupPCGScene(int level, int optSeed=int.MinValue){
+		GameManager.SpecialPathNode[,] blankMap = null;
+		GameManager.SpecialPathNode[,] walledMap = null;
+		if(optSeed!=int.MinValue){
+			blankMap = GenerateBlankBlobMap(200, optSeed);
+			walledMap = AddWallsAndDoors(blankMap, optSeed);
+		}else{
+			blankMap = GenerateBlankBlobMap(200);
+			walledMap = AddWallsAndDoors(blankMap);
 		}
-		return blankMap;
+		Vector3 playerLoc = new Vector3();
+		foreach (GameManager.SpecialPathNode node in walledMap){
+			if(node!=null){
+				if (node.tile==entrance)
+					playerLoc = new Vector3(node.X, node.Y+1, 0f);
+				GameObject instance = Instantiate(node.tile, new Vector3(node.X, node.Y, 0f), Quaternion.identity) as GameObject;
+				instance.transform.SetParent(boardHolder);
+			}
+		}
+		if (playerLoc!=null)
+			Instantiate(player, playerLoc, Quaternion.identity);
+
+		GameManager.SpecialPathNode[,] filledMap = walledMap;
+
+		return filledMap;
 	}
 
-	public Vector3 GetPlayerStart(GameObject[,] boardArray){
-		for (int row=boardArray.GetLength(0)-1; row>0; row--){
-			for (int col=0; col<boardArray.GetLength(1); col++){
-				if (boardArray[row, col].tag == "Enter")
-					return boardArray[row-1, col].transform.position;
+	public Vector3 GetPlayerStart(GameManager.SpecialPathNode[,] boardArray){
+		for (int x=0; x<boardArray.GetLength(0); x++){
+			for (int y=0; y<boardArray.GetLength(1); y++){
+				if (boardArray[x, y].tile.tag == "Enter")
+					return new Vector3(boardArray[x,y+1].X, boardArray[x,y+1].Y, 0f);
 			}
 		}
 		return new Vector3();
@@ -231,13 +261,80 @@ public class BoardManager : MonoBehaviour {
 
 /*////////////////////PROCEDURAL MAP GENERATION FUNCTIONS////////////////////////////////*/
 
+
+	/// 
+	/// Adds the walls and doors to the border of an input blank map. Places the 
+	/// enter door on a south-most wall, and places the exit door on one of the 
+	/// north-most walls.
+	/// NOTE: input blankMap should be array of nodes in blankMap[x,y] format
+	/// 
 	GameManager.SpecialPathNode[,] AddWallsAndDoors(GameManager.SpecialPathNode[,] blankMap, int optSeed=int.MinValue){
 		if(optSeed!=int.MinValue)
 			Random.seed = optSeed;
 
-		GameManager.SpecialPathNode[,] walledMap = null;
+		GameManager.SpecialPathNode[,] walledMap = blankMap;
+		int xNum = walledMap.GetLength(0);
+		int yNum = walledMap.GetLength(1);
+		for (int x=0; x<xNum; x++){
+			int leftInd = (x>0)?(x-1):(0);
+			int rightInd = (x<xNum-1)?(x+1):(xNum-1);
+			for (int y=0; y<yNum; y++){
+				int downInd = (y>0)?(y-1):(0);
+				int upInd = (y<yNum-1)?(y+1):(yNum-1);
+				int[,] cases = new int[4,2]{ //Four cases with (x,y) in each
+					{leftInd, y}, //Case 0: right edge of floor
+					{rightInd, y}, //Case 1: left edge of floor
+					{x, downInd}, //Case 2: upper edge of floor
+					{x, upInd}}; //Case 3: lower edge of floor
+				//If any of the cases are true create an obstacle tile.
+				for (int caseNum=0; caseNum<cases.GetLength(0); caseNum++){
+					int caseX = cases[caseNum,0];
+					int caseY = cases[caseNum,1];
+					if (isFloorNode(blankMap[caseX,caseY]) && blankMap[x,y]==null){ //current cell is empty and one above it is floor
+						GameManager.SpecialPathNode node = new GameManager.SpecialPathNode();
+						node.X = x;
+						node.Y = y;
+						node.tile = obstacleTile;
+						node.IsWall = true;
+						walledMap[x,y] = node;
+					}
+				}
+			}
+		}
+
+		//Now add the enter and exit doors...
+
+		//Exit door:
+		int exitY = walledMap.GetLength(1);
+		List<int> exitOptions = new List<int>();
+		while (exitOptions.Count==0 && exitY>=0){
+			exitY--;
+			for (int i=0; i<walledMap.GetLength(0); i++){
+				if (walledMap[i,exitY]!=null && walledMap[i,exitY].tile==obstacleTile){
+					exitOptions.Add(i);
+				}
+			}
+		}
+		walledMap[exitOptions[Random.Range (0,exitOptions.Count)],exitY].tile = exit;
+
+		//Enter door:
+		int enterY = -1;
+		List<int> enterOptions = new List<int>();
+		while (enterOptions.Count==0 && enterY<walledMap.GetLength(1)){
+			enterY++;
+			for (int i=0; i<walledMap.GetLength(0); i++){
+				if (walledMap[i,enterY]!=null && walledMap[i,enterY].tile==obstacleTile){
+					enterOptions.Add(i);
+				}
+			}
+		}
+		walledMap[enterOptions[Random.Range (0,enterOptions.Count)],enterY].tile = entrance;
 
 		return walledMap;
+	}
+
+	bool isFloorNode (GameManager.SpecialPathNode node){
+		return (node!=null && node.tile==floorTile);
 	}
 
 	class Cell{
@@ -274,6 +371,7 @@ public class BoardManager : MonoBehaviour {
 	///*
 	/// GenerateBlankBlobMap uses a procedural generation algorithm (cell automaton) to create the 
 	/// base floor layout of a map with a number of floor tiles equal to the input area.
+	/// NOTE: should output blank map with format blankMap[x,y]
 	///*
 	GameManager.SpecialPathNode[,] GenerateBlankBlobMap(int area, int optSeed=int.MinValue){
 		if(optSeed!=int.MinValue)
@@ -291,7 +389,7 @@ public class BoardManager : MonoBehaviour {
 			List<Cell> allActive = activeCells.Values.ToList();
 			for (int i=0; i<allActive.Count; i++){
 				List<Cell> neighbors = GetNeighbors(allActive[i], activeCells, false);
-				if (neighbors.Count<=3 && neighbors.Count>0){ //If this active cell has 3 or more active neighbors, add one randomly.
+				if (neighbors.Count<=5 && neighbors.Count>0){ //If this active cell has 3 or more active neighbors, add one randomly.
 					toBeActivated.Add(neighbors[Random.Range(0,neighbors.Count)]); //Get a random inactive neighbor and set it to be active on the next generation.
 				}
 			}
@@ -317,25 +415,26 @@ public class BoardManager : MonoBehaviour {
 //		for (int i=0; i<sortByX.Count; i++)
 //			print (sortByX[i]);
 		int minX = (int)sortByX[0].x;
-		int numCols = (int)sortByX[sortByX.Count-1].x - minX + 1;
+		int xNum = (int)sortByX[sortByX.Count-1].x - minX + 1;
 		List<Vector3> sortByY = activeCells.Keys.ToList();
 		sortByY.Sort((a, b) => a.y.CompareTo(b.y));
 		int minY = (int)sortByY[0].y;
-		int numRows = (int)sortByY[sortByY.Count-1].y - minY + 1;
-		GameManager.SpecialPathNode[,] blankMap = new GameManager.SpecialPathNode[numRows,numCols];
+		int yNum = (int)sortByY[sortByY.Count-1].y - minY + 1;
+		GameManager.SpecialPathNode[,] blankMap = new GameManager.SpecialPathNode[xNum+2,yNum+2];
 
 		//Now convert the cells to the correct data type and fill the array.
 		List<Cell> cells = activeCells.Values.ToList();
 		for (int k=0; k<cells.Count; k++){
 			GameManager.SpecialPathNode node = new GameManager.SpecialPathNode();
-			int x = (int)cells[k].location.x;
-			int y = (int)cells[k].location.y;
-			node.X = x;
-			node.Y = y;
+			//Calculate adjusted x-y coords so that all values are >0 (-minX/Y) and there is room for boundary around (+1).
+			int adjustedX = (int)cells[k].location.x - minX + 1;
+			int adjustedY = (int)cells[k].location.y - minY + 1;
+			node.X = adjustedX;
+			node.Y = adjustedY;
 			node.tile = floorTile;
 			node.IsWall = false;
 
-			blankMap[y-minY,x-minX] = node;
+			blankMap[adjustedX,adjustedY] = node;//y-minY+1,x-minX+1] = node; //+1 here shifts the tiles so there is room to add the walls around them.
 		}
 		return blankMap;
 	}

@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviour {
     }
 
 	void InitGame(){
-		//boardArray = boardScript.SetupPCGScene(level);
+		boardArray = boardScript.SetupPCGScene(level);
 		if (boardArray==null)
 			boardArray = boardScript.SetupDefaultScene();
 	}
