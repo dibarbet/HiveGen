@@ -222,16 +222,17 @@ public class BoardManager : MonoBehaviour {
 	///SetupPCGScene builds a procedurally generated room based on the input level. This function is intended
 	///for main gameplay use over SetupDefaultScene.
 	///*
-    public GameManager.SpecialPathNode[,] SetupPCGScene(int level, int optSeed=int.MinValue){
+	public GameManager.SpecialPathNode[,] SetupPCGScene(int level, int optSeed=int.MinValue){
+		if(optSeed!=int.MinValue)
+			Random.seed = optSeed;
+		optSeed = Random.seed;
+		print ("setup seed:"+optSeed);
+
 		GameManager.SpecialPathNode[,] blankMap = null;
 		GameManager.SpecialPathNode[,] walledMap = null;
-		if(optSeed!=int.MinValue){
-			blankMap = GenerateBlankBlobMap(200, optSeed);
-			walledMap = AddWallsAndDoors(blankMap, optSeed);
-		}else{
-			blankMap = GenerateBlankBlobMap(200);
-			walledMap = AddWallsAndDoors(blankMap);
-		}
+
+		blankMap = GenerateBlankBlobMap(200, optSeed);
+		walledMap = AddWallsAndDoors(blankMap, optSeed);
 		Vector3 playerLoc = new Vector3();
 		foreach (GameManager.SpecialPathNode node in walledMap){
 			if(node!=null){
@@ -271,6 +272,7 @@ public class BoardManager : MonoBehaviour {
 	GameManager.SpecialPathNode[,] AddWallsAndDoors(GameManager.SpecialPathNode[,] blankMap, int optSeed=int.MinValue){
 		if(optSeed!=int.MinValue)
 			Random.seed = optSeed;
+		print ("walls/doors seed:"+Random.seed);
 
 		GameManager.SpecialPathNode[,] walledMap = blankMap;
 		int xNum = walledMap.GetLength(0);
@@ -304,33 +306,111 @@ public class BoardManager : MonoBehaviour {
 
 		//Now add the enter and exit doors...
 
+		bool[,] travSpace = getTraversableSpace(walledMap);
+
 		//Exit door:
 		int exitY = walledMap.GetLength(1);
 		List<int> exitOptions = new List<int>();
-		while (exitOptions.Count==0 && exitY>=0){
+		while (exitOptions.Count==0 && exitY>0){
 			exitY--;
 			for (int i=0; i<walledMap.GetLength(0); i++){
-				if (walledMap[i,exitY]!=null && walledMap[i,exitY].tile==obstacleTile){
+				if (walledMap[i,exitY]!=null && walledMap[i,exitY].tile==obstacleTile && travSpace[i,exitY-1]){
 					exitOptions.Add(i);
 				}
 			}
 		}
-		walledMap[exitOptions[Random.Range (0,exitOptions.Count)],exitY].tile = exit;
+		int exitX = exitOptions[Random.Range (0,exitOptions.Count)];
+		walledMap[exitX,exitY].tile = exit;
 
 		//Enter door:
 		int enterY = -1;
 		List<int> enterOptions = new List<int>();
-		while (enterOptions.Count==0 && enterY<walledMap.GetLength(1)){
+		while (enterOptions.Count==0 && enterY<walledMap.GetLength(1)-1){
 			enterY++;
 			for (int i=0; i<walledMap.GetLength(0); i++){
-				if (walledMap[i,enterY]!=null && walledMap[i,enterY].tile==obstacleTile){
+				if (walledMap[i,enterY]!=null && walledMap[i,enterY].tile==obstacleTile && travSpace[i,enterY+1]){
 					enterOptions.Add(i);
 				}
 			}
 		}
-		walledMap[enterOptions[Random.Range (0,enterOptions.Count)],enterY].tile = entrance;
+		int enterX = enterOptions[Random.Range (0,enterOptions.Count)];
+		walledMap[enterX,enterY].tile = entrance;
 
 		return walledMap;
+	}
+
+	/// 
+	/// Gets the traversable space on the map and returns a 2d bool array with the same size as the input walled map.
+	/// Traversable space is defined as the largest group of adjoined floor tiles on the map. In the returned bool
+	/// array, true values are traversable and false values are not. (Some floor tiles may be marked false if they
+	/// are not adjoined to the biggest group of floor tiles)
+	/// 
+	bool[,] getTraversableSpace(GameManager.SpecialPathNode[,] walledMap){
+		int xNum = walledMap.GetLength(0);
+		int yNum = walledMap.GetLength(1);
+		bool[,] travSpace = new bool[xNum,yNum];
+
+		//groups is a dict of <key=groupNum, value=list of contained locations>
+		Dictionary<int, List<Vector3>> groups = new Dictionary<int, List<Vector3>>();
+		//parents provides quick way to see what group a tile belongs to, <key=tile location, value=groupNum>
+		Dictionary<Vector3, int> parents = new Dictionary<Vector3, int>();
+
+		int groupNum = 0;
+		for (int y=1; y<yNum; y++){
+			for (int x=1; x<xNum; x++){
+				travSpace[x,y] = false; //Fill the array with false to begin with, while organizing floor tiles into groups of adjoined tiles.
+				if (walledMap[x,y]!=null && walledMap[x,y].tile==floorTile){
+					Vector3 currLoc = new Vector3(x,y,0f);
+					int parent=-1;
+					if (walledMap[x,y-1].tile==floorTile){ //If tile below is floor tile, add (x,y) to its group.
+						parent = parents[new Vector3(x,y-1,0f)];
+						parents.Add (currLoc, parent);
+						List<Vector3> groupList = groups[parent];
+						groupList.Add (currLoc);
+						groups[parent] = groupList;
+					}
+					if (walledMap[x-1,y].tile==floorTile){ //If tile to left is a floor tile...
+						Vector3 leftLoc = new Vector3(x-1,y,0f);
+						int leftParent = parents[leftLoc];
+						if (parent!=-1 && parent!=leftParent){ //If there was a floor tile below and the one to left has a different parent, absorb left group into below group.
+							List<Vector3> leftList = groups[leftParent];
+							List<Vector3> downList = groups[parent];
+							foreach (Vector3 loc in leftList){
+								downList.Add (loc);
+								parents[loc] = parent;
+							}
+							groups[parent] = downList;
+							groups.Remove (leftParent);
+						}else if(parent==-1){ //If there wasn't a floor tile below, add (x,y) to left group.
+							parent = parents[leftLoc];
+							parents.Add (currLoc, parent);
+							List<Vector3> groupList = groups[parent];
+							groupList.Add (currLoc);
+							groups[parent] = groupList;
+						}
+					}
+					if (parent==-1){ //If parent has not been determined from the below or left tiles, create a new group for (x,y)
+						parent = groupNum++;
+						List<Vector3> newList = new List<Vector3>();
+						newList.Add(currLoc);
+						groups.Add(parent, newList);
+						parents.Add(currLoc, parent);
+					}
+				}
+			}
+		}
+
+		//Now all the floor tiles have been organized into groups, find the largest group and declare those tiles as the traversable space.
+		List<Vector3> biggestGroup = new List<Vector3>();
+		foreach (List<Vector3> group in groups.Values){
+			if (group.Count > biggestGroup.Count)
+				biggestGroup = group;
+		}
+
+		foreach (Vector3 loc in biggestGroup){
+			travSpace[(int)loc.x, (int)loc.y] = true;
+		}
+		return travSpace;
 	}
 
 	bool isFloorNode (GameManager.SpecialPathNode node){
@@ -376,6 +456,7 @@ public class BoardManager : MonoBehaviour {
 	GameManager.SpecialPathNode[,] GenerateBlankBlobMap(int area, int optSeed=int.MinValue){
 		if(optSeed!=int.MinValue)
 			Random.seed = optSeed;
+		print ("blob map seed:"+Random.seed);
 
 		Dictionary<Vector3, Cell> activeCells = new Dictionary<Vector3, Cell>();
 		Vector3 startLoc = new Vector3(0,0,0f);
@@ -389,7 +470,7 @@ public class BoardManager : MonoBehaviour {
 			List<Cell> allActive = activeCells.Values.ToList();
 			for (int i=0; i<allActive.Count; i++){
 				List<Cell> neighbors = GetNeighbors(allActive[i], activeCells, false);
-				if (neighbors.Count<=5 && neighbors.Count>0){ //If this active cell has 3 or more active neighbors, add one randomly.
+				if (neighbors.Count>=4 && neighbors.Count>0){ //If this active cell has 3 or more active neighbors, add one randomly.
 					toBeActivated.Add(neighbors[Random.Range(0,neighbors.Count)]); //Get a random inactive neighbor and set it to be active on the next generation.
 				}
 			}
