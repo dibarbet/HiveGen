@@ -40,8 +40,19 @@ public class Mover : MonoBehaviour
         GameManager.SpecialPathNode[,] board = GameManager.boardArray;
         foreach (GameManager.SpecialPathNode node in board)
         {
+            if (node == null)
+            {
+                //Debug.Log("Null tile");
+                continue;
+            }
+            else
+            {
+                //Debug.Log("Not null tile");
+            }
+            Debug.Log(node.tile.transform.position);
             if (node.tile.GetComponent<Collider2D>().bounds.Contains(this.transform.position))
             {
+                Debug.Log("Found correct tile");
                 return node;
             }
         }

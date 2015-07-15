@@ -2,7 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class DecisionMaker : MonoBehaviour {
+public class DecisionMaker
+{
 
     /**
      * Idea for tree
@@ -31,10 +32,9 @@ public class DecisionMaker : MonoBehaviour {
             this.ChildrenValues = new List<T>();
         }
 
-        public Node(string name, Node<T> parent, List<T> values)
+        public Node(string name, List<T> values)
         {
             this.Name = name;
-            this.Parent = parent;
             this.Children = new List<Node<T>>();
             this.ChildrenValues = values;
         }
@@ -58,6 +58,10 @@ public class DecisionMaker : MonoBehaviour {
         //E.G:  If the value of this node is true, find the child node for the true branch
         public Node<T> GetChildFromClassification()
         {
+            if (Children.Count == 0)
+            {
+                return null;
+            }
             if (ChildrenValues != null)
             {
                 int index = ChildrenValues.IndexOf(this.Value);
@@ -68,6 +72,10 @@ public class DecisionMaker : MonoBehaviour {
 
         public Node<T> GetChildFromClassification(T value)
         {
+            if (Children.Count == 0)
+            {
+                return null;
+            }
             if (ChildrenValues != null)
             {
                 int index = ChildrenValues.IndexOf(value);
@@ -75,11 +83,89 @@ public class DecisionMaker : MonoBehaviour {
             }
             return null;
         }
+
+        public bool IsLeaf()
+        {
+            return Children.Count == 0;
+        }
+
+        public override string ToString()
+        {
+            if (Value == null)
+            {
+                return Name.ToString() + ", Null Value";
+            }
+            else
+            {
+                return Name.ToString() + ", " + Value.ToString();
+            }
+            
+        }
     }
 
+    public class DecisionTree<T>
+    {
+        Node<T> root;
+        List<AttributeValue<T>> attributes;
+        public DecisionTree(Node<T> root, List<AttributeValue<T>> attributes)
+        {
+            this.root = root;
+            this.attributes = attributes;
+        }
+
+        public string EvaluateTree()
+        {
+            Node<T> cur = root;
+            string retVal = cur.Name;
+            while (cur != null)
+            {
+                retVal = cur.Name;
+                string attribute = cur.Name;
+                foreach(AttributeValue<T> attr in attributes)
+                {
+                    Debug.Log("Current name: " + cur.Name + "; attr name: " + attr.name);
+                    string attrName = attr.name;
+                    if (attrName.Equals(attribute))
+                    {
+                        cur.SetValue(attr.value);
+                        cur = cur.GetChildFromClassification();
+                        
+                        break;
+                    }
+                }
+            }
+            return retVal;
+        }
+
+        public override string ToString()
+        {
+            return root.ToString() + "; Child 1: " + root.Children[0];
+        }
+    }
+
+    public class AttributeValue<T>
+    {
+        public string name;
+        public T value;
+        public AttributeValue(string name, T value)
+        {
+            this.name = name;
+            this.value = value;
+        }
+    }
+
+    public DecisionTree<string> tree;
+
 	// Use this for initialization
-	void Start () {
-        Node<string> root = new Node<string>("This enemy's hp", null, new List<string>(){"LOW", "HIGH"});
+	public DecisionMaker()
+    {
+        Node<string> root = new Node<string>("Player Distance", new List<string>(){"CLOSE", "SIGHT", "FAR"});
+        root.AddChild(new Node<string>("ATTACK", new List<string>()), "CLOSE");
+        root.AddChild(new Node<string>("CHASE", new List<string>()), "SIGHT");
+        root.AddChild(new Node<string>("ROAM", new List<string>()), "FAR");
+
+        tree = new DecisionTree<string>(root, new List<AttributeValue<string>>() { new AttributeValue<string>("Player Distance", "CLOSE") });
+        /**
         //decision node
         Node<string>lowDistance = root.AddChild(new Node<string>("Distance to Player", null, new List<string>() {"CLOSE", "SIGHT", "FAR"}), "LOW");
         //decision node
@@ -99,11 +185,12 @@ public class DecisionMaker : MonoBehaviour {
 
         //Leaf nodes
         playerHP.AddChild(new Node<string>("CHASE", null, new List<string>()), "LOW");
-        playerHP.AddChild(new Node<string>("DEFEND", null, new List<string>()), "HIGH");
+        playerHP.AddChild(new Node<string>("DEFEND", null, new List<string>()), "HIGH");*/
 	}
 	
 	// Update is called once per frame
-	void Update () {
-	
-	}
+	public string MakeDecision()
+    {
+        return tree.EvaluateTree();
+    }
 }

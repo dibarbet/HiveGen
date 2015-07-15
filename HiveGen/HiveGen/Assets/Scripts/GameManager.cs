@@ -51,13 +51,22 @@ public class GameManager : MonoBehaviour {
             final += Environment.NewLine + Environment.NewLine;
         }
         Debug.Log(final);
+
+        
+
 	}
 
     void Start()
     {
         //Get player location
         player = FindObjectOfType<Player>();
+        Debug.Log("PLAYER: " + player);
         PlayerLocation = player.GetComponent<Player>().GetTileOn();
+
+
+        DecisionMaker dec = new DecisionMaker();
+        Debug.Log("TREE: " + dec.tree);
+        //Debug.Log("RESULT: " + dec.MakeDecision());
     }
 
 	void InitGame(){
@@ -110,6 +119,10 @@ public class GameManager : MonoBehaviour {
 
         public override string ToString()
         {
+            if (tile == null)
+            {
+                return "(" + String.Format("{0:00}", X) + ", " + String.Format("{0:00}", Y) + "), " + "N" + "  ||  ";
+            }
             if (IsWall)
             {
                 return "(" + String.Format("{0:00}", X) + ", " + String.Format("{0:00}", Y) + "), " + "T" + "  ||  ";
