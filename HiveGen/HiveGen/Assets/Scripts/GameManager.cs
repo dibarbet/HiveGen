@@ -84,7 +84,7 @@ public class GameManager : MonoBehaviour {
         }
         PlayerLocation = player.GetComponent<Player>().GetTileOn();
         
-        //Debug.Log("GameManager Player Location: " + PlayerLocation.X + ", " + PlayerLocation.Y);
+        Debug.Log("GameManager Player Location: " + PlayerLocation.X + ", " + PlayerLocation.Y);
         //Debug.Log(player.transform.position);
         if (PlayerLocation != PreviousPlayerLocation)
         {

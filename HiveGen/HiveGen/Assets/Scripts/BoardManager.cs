@@ -239,6 +239,7 @@ public class BoardManager : MonoBehaviour {
 				if (node.tile==entrance)
 					playerLoc = new Vector3(node.X, node.Y+1, 0f);
 				GameObject instance = Instantiate(node.tile, new Vector3(node.X, node.Y, 0f), Quaternion.identity) as GameObject;
+                node.tile = instance;
 				instance.transform.SetParent(boardHolder);
 			}
 		}

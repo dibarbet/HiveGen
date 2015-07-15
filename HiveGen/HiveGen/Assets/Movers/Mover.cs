@@ -49,10 +49,10 @@ public class Mover : MonoBehaviour
             {
                 //Debug.Log("Not null tile");
             }
-            Debug.Log(node.tile.transform.position);
+            //Debug.Log(node.tile.transform.position);
             if (node.tile.GetComponent<Collider2D>().bounds.Contains(this.transform.position))
             {
-                Debug.Log("Found correct tile");
+                //Debug.Log("Found correct tile");
                 return node;
             }
         }
