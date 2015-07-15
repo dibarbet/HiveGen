@@ -33,13 +33,18 @@ public class Enemy : Mover
     public void Awake()
     {
         EnemyObject = this.gameObject;
-        Player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        
         Position = this.transform.position;
         IsMoving = false;
         HealthPoints = m_MaxHealth;
         col2D = EnemyObject.GetComponent<Collider2D>();
         rgdBdy = EnemyObject.gameObject.GetComponent<Rigidbody2D>();
         StartPos = transform.position;
+    }
+
+    public void Start()
+    {
+        Player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
     }
 
     public void InstantiateAStar(GameManager.SpecialPathNode[,] board)

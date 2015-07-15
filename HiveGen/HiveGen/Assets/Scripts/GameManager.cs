@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour {
 	private int level = 10;
 	public static SpecialPathNode[,] boardArray;
 
-    private List<Enemy> enemies;
+    private Enemy[] enemies;
     private SpecialPathNode PlayerLocation;
     private SpecialPathNode PreviousPlayerLocation;
     private Player player;
@@ -30,16 +30,7 @@ public class GameManager : MonoBehaviour {
 		InitGame();
         int rowLength = boardArray.GetLength(0);
         int colLength = boardArray.GetLength(1);
-        //Access enemies
-        enemies = boardScript.Enemies;
-        //Instantiate their search space
-        if (enemies != null)
-        {
-            foreach (Enemy e in enemies)
-            {
-                e.InstantiateAStar(boardArray);
-            }
-        }
+        
         //Prints grid in readable way
         string final = "";
         for (int i = 0; i < rowLength; i++)
@@ -58,6 +49,23 @@ public class GameManager : MonoBehaviour {
 
     void Start()
     {
+        //Access enemies
+        enemies = FindObjectsOfType<Enemy>();
+        //Instantiate their search space
+        if (enemies != null)
+        {
+            foreach (Enemy e in enemies)
+            {
+                //Make sure they are initialized to the correct tile.
+                SpecialPathNode tile = e.GetTileOn();
+                e.TileX = tile.X;
+                e.TileY = tile.Y;
+                //Debug.Log("Enemy: " + e.TileX + ", " + e.TileY + "; Player: " + tile.X + ", " + tile.Y);
+                e.InstantiateAStar(boardArray);
+            }
+        }
+
+
         //Get player location
         player = FindObjectOfType<Player>();
         Debug.Log("PLAYER: " + player);
@@ -73,6 +81,22 @@ public class GameManager : MonoBehaviour {
 		boardArray = boardScript.SetupPCGScene(level);
 		if (boardArray==null)
 			boardArray = boardScript.SetupDefaultScene();
+        int xNum = boardArray.GetLength(0);
+        int yNum = boardArray.GetLength(1);
+        for (int y = 0; y < yNum; y++)
+        {
+            for (int x = 0; x < xNum; x++)
+            {
+                //Initialize any empty cells to non-walkable
+                if (boardArray[x, y] == null)
+                {
+                    boardArray[x, y] = new SpecialPathNode();
+                    boardArray[x, y].X = x;
+                    boardArray[x, y].Y = y;
+                    boardArray[x, y].IsWall = true;
+                }
+            }
+        }
 	}
 	
 	// Update is called once per frame
@@ -100,7 +124,7 @@ public class GameManager : MonoBehaviour {
             foreach (Enemy e in enemies)
             {
                 bool success = e.MoveToTile(PlayerLocation);
-                //Debug.Log("Found Path: " + success);
+                Debug.Log("Found Path: " + success);
             }
         }
     }
@@ -119,17 +143,25 @@ public class GameManager : MonoBehaviour {
 
         public override string ToString()
         {
+            
             if (tile == null)
             {
-                return "(" + String.Format("{0:00}", X) + ", " + String.Format("{0:00}", Y) + "), " + "N" + "  ||  ";
+                return "F";
+                //return "(" + String.Format("{0:00}", X) + ", " + String.Format("{0:00}", Y) + "), " + "N" + "  ||  ";
+            }
+            else if (tile.tag == "Enter" || tile.tag == "Exit")
+            {
+                return "D";
             }
             if (IsWall)
             {
-                return "(" + String.Format("{0:00}", X) + ", " + String.Format("{0:00}", Y) + "), " + "T" + "  ||  ";
+                return "T";
+                //return "(" + String.Format("{0:00}", X) + ", " + String.Format("{0:00}", Y) + "), " + "T" + "  ||  ";
             }
             else
             {
-                return "(" + String.Format("{0:00}", X) + ", " + String.Format("{0:00}", Y) + "), " + "F" + "  ||  ";
+                return "F";
+                //return "(" + String.Format("{0:00}", X) + ", " + String.Format("{0:00}", Y) + "), " + "F" + "  ||  ";
             }
         }
     }

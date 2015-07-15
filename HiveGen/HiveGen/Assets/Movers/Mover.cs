@@ -45,9 +45,10 @@ public class Mover : MonoBehaviour
                 //Debug.Log("Null tile");
                 continue;
             }
-            else
+            else if (node.tile == null)
             {
-                //Debug.Log("Not null tile");
+                //Debug.Log("Node, but not a tile");
+                continue;
             }
             //Debug.Log(node.tile.transform.position);
             if (node.tile.GetComponent<Collider2D>().bounds.Contains(this.transform.position))
