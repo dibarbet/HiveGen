@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour {
 	public static GameManager instance = null; //This makes GameManager a singleton, so only one can exist.
 	public BoardManager boardScript;
 
-	private int level = 1;
+	private int level = 10;
 	public static SpecialPathNode[,] boardArray;
 
     private List<Enemy> enemies;

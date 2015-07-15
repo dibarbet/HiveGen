@@ -232,7 +232,7 @@ public class BoardManager : MonoBehaviour {
 		GameManager.SpecialPathNode[,] walledMap = null;
 
 		blankMap = GenerateBlankBlobMap(200, optSeed);
-		walledMap = AddWallsAndDoors(blankMap, optSeed);
+		walledMap = FillBlankMap(blankMap, level, optSeed);
 		Vector3 playerLoc = new Vector3();
 		foreach (GameManager.SpecialPathNode node in walledMap){
 			if(node!=null){
@@ -265,12 +265,12 @@ public class BoardManager : MonoBehaviour {
 
 
 	/// 
-	/// Adds the walls and doors to the border of an input blank map. Places the 
+	/// Adds walls, doors, and enemies to the border of an input blank map. Places the 
 	/// enter door on a south-most wall, and places the exit door on one of the 
-	/// north-most walls.
+	/// north-most walls. The number of enemies placed corresponds to the input level.
 	/// NOTE: input blankMap should be array of nodes in blankMap[x,y] format
 	/// 
-	GameManager.SpecialPathNode[,] AddWallsAndDoors(GameManager.SpecialPathNode[,] blankMap, int optSeed=int.MinValue){
+	GameManager.SpecialPathNode[,] FillBlankMap(GameManager.SpecialPathNode[,] blankMap, int level, int optSeed=int.MinValue){
 		if(optSeed!=int.MinValue)
 			Random.seed = optSeed;
 		print ("walls/doors seed:"+Random.seed);
@@ -336,6 +336,23 @@ public class BoardManager : MonoBehaviour {
 		}
 		int enterX = enterOptions[Random.Range (0,enterOptions.Count)];
 		walledMap[enterX,enterY].tile = entrance;
+
+		//Now place the enemies on the map based on the level and traversable space.
+		Vector3 enterLoc = new Vector3(enterX, enterY, 0f);
+		print ("level:"+level);
+		int numEnemies = level;//Mathf.Max((int)(Mathf.Log(level, 2f)+1)*level/3,level);
+		print ("numEnemies:"+numEnemies);
+		for (int i=0; i<numEnemies; i++){
+			int randX = -1;
+			int randY = -1;
+			Vector3 randVec = new Vector3(randX, randY, 0f);
+			while (randX==-1 || randY==-1 || !travSpace[randX,randY] || Vector3.Distance(randVec, enterLoc)<10){
+				randX = Random.Range (0,travSpace.GetLength(0));
+				randY = Random.Range (0,travSpace.GetLength(1));
+				randVec = new Vector3(randX, randY, 0f);
+			}
+			Instantiate(enemy, randVec, Quaternion.identity);
+		}
 
 		return walledMap;
 	}
