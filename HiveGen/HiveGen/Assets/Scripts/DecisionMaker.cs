@@ -14,157 +14,24 @@ public class DecisionMaker
      */
 
 
-    public class Node<T>
-    {
-        public string Name { get; set; }
-        public T Value { get; set; }
-
-        public Node<T> Parent { get; set; }
-        public List<Node<T>> Children { get; private set; }
-        public List<T> ChildrenValues { get; private set; }
-
-        public Node(string name, T value, Node<T> parent)
-        {
-            this.Name = name;
-            this.Value = value;
-            this.Parent = parent;
-            this.Children = new List<Node<T>>();
-            this.ChildrenValues = new List<T>();
-        }
-
-        public Node(string name, List<T> values)
-        {
-            this.Name = name;
-            this.Children = new List<Node<T>>();
-            this.ChildrenValues = values;
-        }
-
-        //Add child and value, where value corresponds to the value of this node (e.g. if this node is true, go to child)
-        public Node<T> AddChild(Node<T> child, T value)
-        {
-            Children.Add(child);
-            child.Parent = this;
-            ChildrenValues.Add(value);
-            return child;
-        }
-
-        //set value for this node
-        public void SetValue(T value)
-        {
-            this.Value = value;
-        }
-
-        //This returns the child corresponding the value of this node.
-        //E.G:  If the value of this node is true, find the child node for the true branch
-        public Node<T> GetChildFromClassification()
-        {
-            if (Children.Count == 0)
-            {
-                return null;
-            }
-            if (ChildrenValues != null)
-            {
-                int index = ChildrenValues.IndexOf(this.Value);
-                return Children[index];
-            }
-            return null;
-        }
-
-        public Node<T> GetChildFromClassification(T value)
-        {
-            if (Children.Count == 0)
-            {
-                return null;
-            }
-            if (ChildrenValues != null)
-            {
-                int index = ChildrenValues.IndexOf(value);
-                return Children[index];
-            }
-            return null;
-        }
-
-        public bool IsLeaf()
-        {
-            return Children.Count == 0;
-        }
-
-        public override string ToString()
-        {
-            if (Value == null)
-            {
-                return Name.ToString() + ", Null Value";
-            }
-            else
-            {
-                return Name.ToString() + ", " + Value.ToString();
-            }
-            
-        }
-    }
-
-    public class DecisionTree<T>
-    {
-        Node<T> root;
-        List<AttributeValue<T>> attributes;
-        public DecisionTree(Node<T> root, List<AttributeValue<T>> attributes)
-        {
-            this.root = root;
-            this.attributes = attributes;
-        }
-
-        public string EvaluateTree()
-        {
-            Node<T> cur = root;
-            string retVal = cur.Name;
-            while (cur != null)
-            {
-                retVal = cur.Name;
-                string attribute = cur.Name;
-                foreach(AttributeValue<T> attr in attributes)
-                {
-                    Debug.Log("Current name: " + cur.Name + "; attr name: " + attr.name);
-                    string attrName = attr.name;
-                    if (attrName.Equals(attribute))
-                    {
-                        cur.SetValue(attr.value);
-                        cur = cur.GetChildFromClassification();
-                        
-                        break;
-                    }
-                }
-            }
-            return retVal;
-        }
-
-        public override string ToString()
-        {
-            return root.ToString() + "; Child 1: " + root.Children[0];
-        }
-    }
-
-    public class AttributeValue<T>
-    {
-        public string name;
-        public T value;
-        public AttributeValue(string name, T value)
-        {
-            this.name = name;
-            this.value = value;
-        }
-    }
+    
 
     public DecisionTree<string> tree;
+    Node<string> root;
 
 	// Use this for initialization
 	public DecisionMaker()
     {
-        Node<string> root = new Node<string>("Player Distance", new List<string>(){"CLOSE", "SIGHT", "FAR"});
-        root.AddChild(new Node<string>("ATTACK", new List<string>()), "CLOSE");
-        root.AddChild(new Node<string>("CHASE", new List<string>()), "SIGHT");
-        root.AddChild(new Node<string>("ROAM", new List<string>()), "FAR");
+        List<string> empty = new List<string>();
+        root = new Node<string>("Player Distance");
+        root.AddChild(new Node<string>("ATTACK"), "CLOSE");
+        root.AddChild(new Node<string>("CHASE"), "SIGHT");
+        Node<string> playerHP = new Node<string>("Enemy HP");
+        root.AddChild(playerHP, "FAR");
+        playerHP.AddChild(new Node<string>("ROAM"), "HIGH");
+        playerHP.AddChild(new Node<string>("DEFEND"), "LOW");
 
-        tree = new DecisionTree<string>(root, new List<AttributeValue<string>>() { new AttributeValue<string>("Player Distance", "CLOSE") });
+        
         /**
         //decision node
         Node<string>lowDistance = root.AddChild(new Node<string>("Distance to Player", null, new List<string>() {"CLOSE", "SIGHT", "FAR"}), "LOW");
@@ -189,8 +56,156 @@ public class DecisionMaker
 	}
 	
 	// Update is called once per frame
-	public string MakeDecision()
+	public string MakeDecision(List<AttributeValue<string>> attributes)
     {
+        tree = new DecisionTree<string>(root, attributes);
         return tree.EvaluateTree();
+    }
+}
+
+public class Node<T>
+{
+    public string Name { get; set; }
+    public T Value { get; set; }
+
+    public Node<T> Parent { get; set; }
+    //public List<Node<T>> Children { get; private set; }
+    //public List<T> ChildrenValues { get; private set; }
+    public Dictionary<T, Node<T>> ChildDict;
+    /**
+    public Node(string name, T value, Node<T> parent)
+    {
+        this.Name = name;
+        this.Value = value;
+        this.Parent = parent;
+        ChildDict = new Dictionary<T, Node<T>>();
+    }*/
+
+    public Node(string name)
+    {
+        this.Name = name;
+        ChildDict = new Dictionary<T, Node<T>>();
+    }
+
+    //Add child and value, where value corresponds to the value of this node (e.g. if this node is true, go to child)
+    public Node<T> AddChild(Node<T> child, T value)
+    {
+        ChildDict.Add(value, child);
+        child.Parent = this;
+        return child;
+    }
+
+    //set value for this node
+    public void SetValue(T value)
+    {
+        this.Value = value;
+    }
+
+    //This returns the child corresponding the value of this node.
+    //E.G:  If the value of this node is true, find the child node for the true branch
+    public Node<T> GetChildFromClassification()
+    {
+        if (ChildDict.Keys.Count == 0)
+        {
+            return null;
+        }
+        return ChildDict[Value];
+    }
+
+    /*
+    public Node<T> GetChildFromClassification(T value)
+    {
+        if (Children.Count == 0)
+        {
+            return null;
+        }
+        if (ChildrenValues != null)
+        {
+            int index = ChildrenValues.IndexOf(value);
+            return Children[index];
+        }
+        return null;
+    }*/
+
+    public bool IsLeaf()
+    {
+        return ChildDict.Keys.Count == 0;
+    }
+
+    public override string ToString()
+    {
+        if (Value == null)
+        {
+            return Name.ToString() + ", Null Value";
+        }
+        else
+        {
+            return Name.ToString() + ", " + Value.ToString();
+        }
+
+    }
+}
+
+public class DecisionTree<T>
+{
+    Node<T> root;
+    List<AttributeValue<T>> attributes;
+    public DecisionTree(Node<T> root, List<AttributeValue<T>> attributes)
+    {
+        this.root = root;
+        this.attributes = attributes;
+    }
+
+    public string EvaluateTree()
+    {
+        Node<T> cur = root;
+        string retVal = cur.Name;
+        int iterations = 100;
+        int curIter = 0;
+        while (cur != null)
+        {
+            if (curIter >= iterations)
+            {
+                Debug.Log("INFINITE LOOP");
+                return "";
+            }
+            retVal = cur.Name;
+            if (cur.ChildDict.Keys.Count == 0)
+            {
+                return retVal;
+            }
+            string attribute = cur.Name;
+
+            foreach (AttributeValue<T> attr in attributes)
+            {
+                Debug.Log("Current name: " + cur.Name + "; attr name: " + attr.name);
+                string attrName = attr.name;
+                if (attrName.Equals(attribute))
+                {
+                    Debug.Log("attrval: " + attr.value);
+                    cur.SetValue(attr.value);
+                    cur = cur.GetChildFromClassification();
+                    break;
+                }
+            }
+            curIter++;
+        }
+        return retVal;
+    }
+
+    public override string ToString()
+    {
+        return root.ToString() + "; Child 1: " + root.ChildDict.Keys.ToString();
+    }
+}
+
+public class AttributeValue<T>
+{
+    public string name;
+    public T value;
+    public AttributeValue(string name, T value)
+    {
+        this.name = name;
+        this.value = value;
     }
 }

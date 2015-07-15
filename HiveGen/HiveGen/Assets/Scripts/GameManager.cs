@@ -66,7 +66,7 @@ public class GameManager : MonoBehaviour {
 
         DecisionMaker dec = new DecisionMaker();
         Debug.Log("TREE: " + dec.tree);
-        //Debug.Log("RESULT: " + dec.MakeDecision());
+        Debug.Log("RESULT: " + dec.MakeDecision(new List<AttributeValue<string>>() { new AttributeValue<string>("Player Distance", "FAR"), new AttributeValue<string>("Enemy HP", "LOW") }));
     }
 
 	void InitGame(){
@@ -84,7 +84,7 @@ public class GameManager : MonoBehaviour {
         }
         PlayerLocation = player.GetComponent<Player>().GetTileOn();
         
-        Debug.Log("GameManager Player Location: " + PlayerLocation.X + ", " + PlayerLocation.Y);
+        //Debug.Log("GameManager Player Location: " + PlayerLocation.X + ", " + PlayerLocation.Y);
         //Debug.Log(player.transform.position);
         if (PlayerLocation != PreviousPlayerLocation)
         {
