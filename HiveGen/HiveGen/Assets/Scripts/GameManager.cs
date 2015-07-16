@@ -158,6 +158,12 @@ public class GameManager : MonoBehaviour {
 		
 	}
 
+	public void GameOver(){
+		doingSetup = true;
+		levelText.text = "Game Over! You died on level "+level+"/10.";
+		levelImage.SetActive(true);
+	}
+
     private void PathToPlayer()
     {
         if (enemies != null)

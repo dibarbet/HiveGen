@@ -20,16 +20,9 @@ public class Player : Mover
     private Rigidbody2D rgdBdy;
 
 	public Text HealthText;
+	private float nextLevelDelay = 1f;
 
 
-// <<<<<<< HEAD:HiveGen/HiveGen/Assets/Agents/Player.cs
-	// public GameObject shot;
-	// public Transform shotSpawn;
-	// public float fireRate;
-	// private float nextFire;
-
-    // public bool Die()
-// =======
     public GameObject BulletPrefab;
 
     public void Awake()
@@ -73,7 +66,10 @@ public class Player : Mover
         transform.Rotate(0, 0, -rotation);*/
     }
 
-    
+    public override bool Die(){
+		GameManager.instance.GameOver();
+		return this.Die ();
+	}
 
     public bool DecrementHealth(int amt)
     {
@@ -120,11 +116,15 @@ public class Player : Mover
     
     void OnCollisionEnter2D(Collision2D col)
     {
+		print ("collision...");
         if (col.gameObject.tag == "Enemy")
         {
             //DecrementHealth(1);
             m_TimeInsideEnemy = 0;
-        }
+        }else if(col.gameObject.tag == "Exit"){
+			print ("with exit");
+			Invoke ("NextLevel", nextLevelDelay);
+		}
     }
 
     void OnCollisionStay2D(Collision2D col)
@@ -146,35 +146,9 @@ public class Player : Mover
             m_TimeInsideEnemy = 0;
         }
     }
-// <<<<<<< HEAD:HiveGen/HiveGen/Assets/Agents/Player.cs
 
-    // public override void Update()
-    // {
-        // //Debug.Log("Moving player");
-        // Position = transform.position;
-
-        // //This code will make it follow the mouse
-        // /**
-        // Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        // transform.rotation = Quaternion.LookRotation(Vector3.forward, mousePos - transform.position);
-
-        // transform.position += Time.deltaTime * m_Speed * Input.GetAxis("Vertical") * transform.up;
-        // //transform.position += Time.deltaTime * m_Speed * Input.GetAxis("Horizontal") * transform.up;*/
-
-        // //This code uses WASD
-        // float translation = Input.GetAxis("Vertical") * m_Speed;
-        // float rotation = Input.GetAxis("Horizontal") * m_RotationSpeed;
-        // translation *= Time.deltaTime;
-        // rotation *= Time.deltaTime;
-        // transform.Translate(0, translation, 0);
-        // transform.Rotate(0, 0, -rotation);
-
-		// if(Input.GetButton("Fire1") && Time.time > nextFire){
-			// nextFire = Time.time + fireRate;
-			// Instantiate(shot, shotSpawn.position, shotSpawn.rotation);
-		// }
-    // }
-
-// =======
-// >>>>>>> origin/master:HiveGen/HiveGen/Assets/Movers/Player.cs
+	private void NextLevel(){
+		print ("called NextLevel");
+		Application.LoadLevel(Application.loadedLevel);
+	}
 }
