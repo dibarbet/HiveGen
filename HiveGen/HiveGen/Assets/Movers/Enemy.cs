@@ -65,7 +65,7 @@ public class Enemy : Mover
     GameManager.SpecialPathNode nTile;
 
     private float nextActionTime = 0.0f;
-    private float period = 0.1f;
+    private float period = 0.01f;
 
     public override void Update()
     {
