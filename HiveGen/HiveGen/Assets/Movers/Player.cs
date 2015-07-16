@@ -121,10 +121,16 @@ public class Player : Mover
         {
             //DecrementHealth(1);
             m_TimeInsideEnemy = 0;
-        }else if(col.gameObject.tag == "Exit"){
-			print ("with exit");
-			Invoke ("NextLevel", nextLevelDelay);
-		}
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.tag == "Exit")
+        {
+            print("Exiting level");
+            Invoke("NextLevel", nextLevelDelay);
+        }
     }
 
     void OnCollisionStay2D(Collision2D col)
