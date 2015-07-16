@@ -236,15 +236,15 @@ public class BoardManager : MonoBehaviour {
 		Vector3 playerLoc = new Vector3();
 		foreach (GameManager.SpecialPathNode node in walledMap){
 			if(node!=null){
-				if (node.tile==entrance)
-					playerLoc = new Vector3(node.X, node.Y+1, 0f);
+//				if (node.tile==entrance)
+//					playerLoc = new Vector3(node.X, node.Y+1, 0f);
 				GameObject instance = Instantiate(node.tile, new Vector3(node.X, node.Y, 0f), Quaternion.identity) as GameObject;
                 node.tile = instance;
 				instance.transform.SetParent(boardHolder);
 			}
 		}
-		if (playerLoc!=null)
-			Instantiate(player, playerLoc, Quaternion.identity);
+//		if (playerLoc!=null)
+//			Instantiate(player, playerLoc, Quaternion.identity);
 
 		GameManager.SpecialPathNode[,] filledMap = walledMap;
 
@@ -337,8 +337,9 @@ public class BoardManager : MonoBehaviour {
 		int enterX = enterOptions[Random.Range (0,enterOptions.Count)];
 		walledMap[enterX,enterY].tile = entrance;
 
-		//Now place the enemies on the map based on the level and traversable space.
-		Vector3 enterLoc = new Vector3(enterX, enterY, 0f);
+		//Now place the player and enemies on the map based on the level and traversable space.
+		Vector3 playerLoc = new Vector3(enterX, enterY+1, 0f);
+		Instantiate(player, playerLoc, Quaternion.identity);
 		print ("level:"+level);
 		int numEnemies = level;//Mathf.Max((int)(Mathf.Log(level, 2f)+1)*level/3,level);
 		print ("numEnemies:"+numEnemies);
@@ -346,17 +347,21 @@ public class BoardManager : MonoBehaviour {
 			int randX = -1;
 			int randY = -1;
 			Vector3 randVec = new Vector3(randX, randY, 0f);
-			while (randX==-1 || randY==-1 || !travSpace[randX,randY] || Vector3.Distance(randVec, enterLoc)<10){
+			while (randX==-1 || randY==-1 || !travSpace[randX,randY] || Vector3.Distance(randVec, playerLoc)<10){
 				randX = Random.Range (0,travSpace.GetLength(0));
 				randY = Random.Range (0,travSpace.GetLength(1));
 				randVec = new Vector3(randX, randY, 0f);
 			}
-			Instantiate(enemy, randVec, Quaternion.identity);
+			GameObject instance = Instantiate(enemy, randVec, Quaternion.identity) as GameObject;
+			Enemy thisEnemy = instance.GetComponent<Enemy>();
+			if (Enemies == null)
+				Enemies = new List<Enemy>();
+			Enemies.Add(thisEnemy);
 		}
-
+		
 		return walledMap;
 	}
-
+	
 	/// 
 	/// Gets the traversable space on the map and returns a 2d bool array with the same size as the input walled map.
 	/// Traversable space is defined as the largest group of adjoined floor tiles on the map. In the returned bool

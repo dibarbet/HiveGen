@@ -3,20 +3,26 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using AStar;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour {
 
 	public static GameManager instance = null; //This makes GameManager a singleton, so only one can exist.
 	public BoardManager boardScript;
 
-	private int level = 10;
 	public static SpecialPathNode[,] boardArray;
 
-    private Enemy[] enemies;
-    private SpecialPathNode PlayerLocation;
-    private SpecialPathNode PreviousPlayerLocation;
-    private Player player;
+    	private Enemy[] enemies;
+    	private SpecialPathNode PlayerLocation;
+    	private SpecialPathNode PreviousPlayerLocation;
+    	private Player player;
 
+	//UI Elements:
+	public float levelStartDelay = 2f;
+	public Text levelText;
+	private GameObject levelImage;
+	private int level = 1;
+	private bool doingSetup;
 
 	// Use this for initialization
 	void Awake () {
@@ -45,6 +51,11 @@ public class GameManager : MonoBehaviour {
 
         
 
+	}
+
+	void OnLevelWasLoaded(int index){
+		level++;
+		InitGame();
 	}
 
     void Start()
@@ -78,6 +89,15 @@ public class GameManager : MonoBehaviour {
     }
 
 	void InitGame(){
+		doingSetup = true;
+		levelImage = GameObject.Find("LevelImage");
+		levelText = levelImage.GetComponentInChildren<Text>();
+//		levelText = GameObject.Find("LevelText").GetComponent<Text>();
+		levelText.text = "Level: "+level+"/10";
+		levelImage.SetActive(true);
+		Invoke("HideLevelImage", levelStartDelay);
+
+		//enemies.Clear();
 		boardArray = boardScript.SetupPCGScene(level);
 		if (boardArray==null)
 			boardArray = boardScript.SetupDefaultScene();
@@ -98,9 +118,15 @@ public class GameManager : MonoBehaviour {
             }
         }
 	}
+
+	private void HideLevelImage(){
+		levelImage.SetActive(false);
+		doingSetup = false;
+	}
 	
 	// Update is called once per frame
 	void Update () {
+<<<<<<< HEAD
         if (player == null || enemies.Length == 0)
         {
             Mover[] movers = FindObjectsOfType<Mover>();
@@ -126,6 +152,24 @@ public class GameManager : MonoBehaviour {
                 PreviousPlayerLocation = PlayerLocation;
             }
         }
+=======
+		if(!doingSetup){
+	        if (PreviousPlayerLocation == null)
+	        {
+	            PreviousPlayerLocation = PlayerLocation;
+	            //PathToPlayer();
+	        }
+	        PlayerLocation = player.GetComponent<Player>().GetTileOn();
+	        
+	        //Debug.Log("GameManager Player Location: " + PlayerLocation.X + ", " + PlayerLocation.Y);
+	        //Debug.Log(player.transform.position);
+	        if (PlayerLocation != PreviousPlayerLocation)
+	        {
+	            //PathToPlayer();
+	            PreviousPlayerLocation = PlayerLocation;
+	        }
+		}
+>>>>>>> origin/master
 	}
 
     private void PathToPlayer()

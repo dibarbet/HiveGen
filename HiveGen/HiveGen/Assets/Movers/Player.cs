@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using AStar;
+using UnityEngine.UI;
 
 public class Player : Mover
 {
@@ -17,6 +18,8 @@ public class Player : Mover
 
     private Collider2D col2D;
     private Rigidbody2D rgdBdy;
+
+	public Text HealthText;
 
 
 // <<<<<<< HEAD:HiveGen/HiveGen/Assets/Agents/Player.cs
@@ -37,6 +40,9 @@ public class Player : Mover
         HealthPoints = m_MaxHealth;
         col2D = this.gameObject.GetComponent<Collider2D>();
         rgdBdy = this.gameObject.GetComponent<Rigidbody2D>();
+		if (HealthText==null)
+			HealthText = GameObject.Find ("HealthText").GetComponent<Text>();
+		HealthText.text = "Health: "+HealthPoints;
     }
 
     public override void Update()
@@ -80,7 +86,8 @@ public class Player : Mover
             else
             {
                 HealthPoints -= amt;
-            }
+			}
+			HealthText.text = "Health: "+HealthPoints;
             return true;
         }
         return false;
@@ -102,7 +109,8 @@ public class Player : Mover
             else
             {
                 HealthPoints += amt;
-            }
+			}
+			HealthText.text = "Health: "+HealthPoints;
             return true;
         }
         return false;
