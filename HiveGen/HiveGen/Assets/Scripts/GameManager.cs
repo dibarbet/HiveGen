@@ -126,7 +126,6 @@ public class GameManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-<<<<<<< HEAD
         if (player == null || enemies.Length == 0)
         {
             Mover[] movers = FindObjectsOfType<Mover>();
@@ -137,39 +136,26 @@ public class GameManager : MonoBehaviour {
         }
         else
         {
-            if (PreviousPlayerLocation == null)
-            {
-                PreviousPlayerLocation = PlayerLocation;
-                //PathToPlayer();
-            }
             PlayerLocation = player.GetComponent<Player>().GetTileOn();
-
-            //Debug.Log("GameManager Player Location: " + PlayerLocation.X + ", " + PlayerLocation.Y);
-            //Debug.Log(player.transform.position);
-            if (PlayerLocation != PreviousPlayerLocation)
+            if (!doingSetup)
             {
-                //PathToPlayer();
-                PreviousPlayerLocation = PlayerLocation;
+                if (PreviousPlayerLocation == null)
+                {
+                    PreviousPlayerLocation = PlayerLocation;
+                    //PathToPlayer();
+                }
+                
+
+                //Debug.Log("GameManager Player Location: " + PlayerLocation.X + ", " + PlayerLocation.Y);
+                //Debug.Log(player.transform.position);
+                if (PlayerLocation != PreviousPlayerLocation)
+                {
+                    //PathToPlayer();
+                    PreviousPlayerLocation = PlayerLocation;
+                }
             }
         }
-=======
-		if(!doingSetup){
-	        if (PreviousPlayerLocation == null)
-	        {
-	            PreviousPlayerLocation = PlayerLocation;
-	            //PathToPlayer();
-	        }
-	        PlayerLocation = player.GetComponent<Player>().GetTileOn();
-	        
-	        //Debug.Log("GameManager Player Location: " + PlayerLocation.X + ", " + PlayerLocation.Y);
-	        //Debug.Log(player.transform.position);
-	        if (PlayerLocation != PreviousPlayerLocation)
-	        {
-	            //PathToPlayer();
-	            PreviousPlayerLocation = PlayerLocation;
-	        }
-		}
->>>>>>> origin/master
+		
 	}
 
     private void PathToPlayer()
