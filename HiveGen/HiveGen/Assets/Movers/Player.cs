@@ -50,20 +50,21 @@ public class Player : Mover
             Physics2D.IgnoreCollision(BulletPrefab.GetComponent<Collider2D>(), col2D);
         }
         //This code will make it follow the mouse
-        /**
+        
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         transform.rotation = Quaternion.LookRotation(Vector3.forward, mousePos - transform.position);
 
         transform.position += Time.deltaTime * Speed * Input.GetAxis("Vertical") * transform.up;
-        //transform.position += Time.deltaTime * Speed * Input.GetAxis("Horizontal") * transform.up;*/
+        //transform.position += Time.deltaTime * Speed * Input.GetAxis("Horizontal") * transform.up;
 
         //This code uses WASD
+        /*
         float translation = Input.GetAxis("Vertical") * Speed;
         float rotation = Input.GetAxis("Horizontal") * m_RotationSpeed;
         translation *= Time.deltaTime;
         rotation *= Time.deltaTime;
         transform.Translate(0, translation, 0);
-        transform.Rotate(0, 0, -rotation);
+        transform.Rotate(0, 0, -rotation);*/
     }
 
     

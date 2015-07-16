@@ -74,7 +74,7 @@ public class GameManager : MonoBehaviour {
 
         DecisionMaker dec = new DecisionMaker();
         Debug.Log("TREE: " + dec.tree);
-        Debug.Log("RESULT: " + dec.MakeDecision(new List<AttributeValue<string>>() { new AttributeValue<string>("Player Distance", "FAR"), new AttributeValue<string>("Enemy HP", "LOW") }));
+        Debug.Log("RESULT: " + dec.MakeDecision(new List<AttributeValue<string>>() { new AttributeValue<string>("Player Distance", "FAR"), new AttributeValue<string>("Bullet Visible", "NO") }));
     }
 
 	void InitGame(){
@@ -101,19 +101,30 @@ public class GameManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if (PreviousPlayerLocation == null)
+        if (player == null || enemies.Length == 0)
         {
-            PreviousPlayerLocation = PlayerLocation;
-            PathToPlayer();
+            Mover[] movers = FindObjectsOfType<Mover>();
+            foreach (Mover m in movers)
+            {
+                m.Die();
+            }
         }
-        PlayerLocation = player.GetComponent<Player>().GetTileOn();
-        
-        //Debug.Log("GameManager Player Location: " + PlayerLocation.X + ", " + PlayerLocation.Y);
-        //Debug.Log(player.transform.position);
-        if (PlayerLocation != PreviousPlayerLocation)
+        else
         {
-            PathToPlayer();
-            PreviousPlayerLocation = PlayerLocation;
+            if (PreviousPlayerLocation == null)
+            {
+                PreviousPlayerLocation = PlayerLocation;
+                //PathToPlayer();
+            }
+            PlayerLocation = player.GetComponent<Player>().GetTileOn();
+
+            //Debug.Log("GameManager Player Location: " + PlayerLocation.X + ", " + PlayerLocation.Y);
+            //Debug.Log(player.transform.position);
+            if (PlayerLocation != PreviousPlayerLocation)
+            {
+                //PathToPlayer();
+                PreviousPlayerLocation = PlayerLocation;
+            }
         }
 	}
 

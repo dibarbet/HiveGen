@@ -13,13 +13,22 @@ public class Enemy : Mover
         set { m_Speed = value; }
     }
 
+    DecisionMaker MakeDecision;
+    string curDecision;
+    string prevDecision;
+
+    AttributeValue<string> playerDist;
+    AttributeValue<string> bulletClose;
+    AttributeValue<string> prevDistDecision;
+    AttributeValue<string> prevBulletDecision;
+
+
     private int m_MaxHealth = 100;
     public int HealthPoints { get; private set; }
 
-    public GameObject EnemyObject { get; set; }
-
     private Collider2D col2D;
-    private Rigidbody2D rgdBdy;
+    private SpriteRenderer sprite;
+
     private Player Player;
 
     public int TileX { get; set; }
@@ -29,22 +38,197 @@ public class Enemy : Mover
     private LinkedList<GameManager.SpecialPathNode> path;
     private LinkedListNode<GameManager.SpecialPathNode> CurrentGoalNode;
 
+
     //Use awake, start is not always called at object creation, leading to null reference errors
     public void Awake()
     {
-        EnemyObject = this.gameObject;
-        
+        MakeDecision = new DecisionMaker();
+        playerDist = new AttributeValue<string>("Player Distance");
+        bulletClose = new AttributeValue<string>("Bullet Visible");
+        prevDistDecision = new AttributeValue<string>("Player Distance");
+        prevBulletDecision = new AttributeValue<string>("Bullet Visible");
         Position = this.transform.position;
         IsMoving = false;
         HealthPoints = m_MaxHealth;
-        col2D = EnemyObject.GetComponent<Collider2D>();
-        rgdBdy = EnemyObject.gameObject.GetComponent<Rigidbody2D>();
+        col2D = this.GetComponent<Collider2D>();
         StartPos = transform.position;
+        sprite = this.GetComponent<SpriteRenderer>();
     }
 
     public void Start()
     {
         Player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+    }
+
+
+    GameManager.SpecialPathNode prevPlayerTile;
+    GameManager.SpecialPathNode nTile;
+
+    private float nextActionTime = 0.0f;
+    private float period = 0.1f;
+
+    public override void Update()
+    {
+        Bullet target = null;
+        //Debug.Log("CURRENT DECISION: " + curDecision);
+
+        prevDecision = curDecision;
+
+        //Determine if player tile changed
+        prevPlayerTile = nTile;
+        nTile = Player.GetTileOn();
+        
+        //Only calculate distance change if new tile.
+        if (nTile != prevPlayerTile)
+        {
+            //
+        }
+        //Get bullet if close to move to
+        target = BulletVisibleDecision();
+        //Only need to recalculate distance to player if the player changes tiles
+        if (prevBulletDecision.value != bulletClose.value || nTile != prevPlayerTile)
+        {
+            //Prevents too many decisions from happening
+            if ((Time.time > nextActionTime))
+            {
+                nextActionTime = Time.time + period;
+
+                //We have to perform the decision even distance result is the same, to make sure the enemy paths to the newest player position
+                //If we did not, the enemy could just stay in range but never be hit by the enemy
+                string dis = DistanceToPlayerDecision();
+                if (dis == "FAR")
+                {
+                    if (curDecision != "MOVINGTOBULLET")
+                    {
+                        curDecision = MakeDecision.MakeDecision(new List<AttributeValue<string>>() { playerDist, bulletClose });
+                    }
+                }
+                else
+                {
+                    curDecision = MakeDecision.MakeDecision(new List<AttributeValue<string>>() { playerDist, bulletClose });
+                }
+                
+            }   
+        }
+
+        
+
+        
+        //Execute decision
+
+        if (curDecision == "CHASE")
+        {
+            GameManager.SpecialPathNode playerTile = Player.GetTileOn();
+            this.MoveToTile(playerTile);
+            //To make sure it keeps moving, rather than sitting on "CHASE"
+            curDecision = "MOVING";
+        }
+        else if (curDecision == "STAY")
+        {
+            IsMoving = false;
+        }
+        else if (curDecision == "FINDBULLET")
+        {
+            
+            if (target != null)
+            {
+                Debug.Log(target);
+                this.MoveToTile(target.GetTileOn());
+                curDecision = "MOVINGTOBULLET";
+            }
+        }
+
+        Position = transform.position;
+        if ((CurrentGoalNode != null) && IsAtGoal(CurrentGoalNode.Value.tile.transform.position))
+        {
+
+            LinkedListNode<GameManager.SpecialPathNode> next = CurrentGoalNode.Next;
+            if (next == null)
+            {
+                //Debug.Log("Final node found");
+                //end of list
+                IsMoving = false;
+                if (curDecision == "MOVINGTOBULLET")
+                {
+                    curDecision = "DONEMOVINGTOBULLET";
+                }
+            }
+            else
+            {
+                MoveToNode(next);
+            }
+        }
+        else
+        {
+            if (CurrentGoalNode != null)
+            {
+                TileX = CurrentGoalNode.Value.X;
+                TileY = CurrentGoalNode.Value.Y;
+            }
+        }
+        if (IsMoving)
+        {
+            //Debug.Log("goal: " + GoalPos);
+            transform.position = Vector3.MoveTowards(transform.position, GoalPos, Speed * Time.deltaTime);
+        }
+    }
+
+    float minDist = 5.0f;
+
+    
+
+    public string DistanceToPlayerDecision()
+    {
+        prevDistDecision.value = playerDist.value;
+        float dist = Vector3.Distance(this.transform.position, Player.transform.position);
+        string result;
+        if (dist < minDist)
+        {
+             result = "SIGHT";
+             playerDist.value = result;
+             
+             //Debug.Log("Distance result: " + result + "; distance: " + dist);
+             return result;
+        }
+        else
+        {
+            result = "FAR";
+            playerDist.value = result;
+            
+            //Debug.Log("Distance result: " + result + "; distance: " + dist);
+            return result;
+        }
+    }
+
+    public Bullet BulletVisibleDecision()
+    {
+        prevBulletDecision.value = bulletClose.value;
+        Bullet[] bullets = FindObjectsOfType<Bullet>();
+        if (bullets.Length == 0)
+        {
+            bulletClose.value = "NO";
+            return null;
+        }
+        string result = "NO";
+        foreach (Bullet b in bullets)
+        {
+            float dist = Vector3.Distance(this.transform.position, b.transform.position);
+            if (dist < minDist)
+            {
+                result = "YES";
+                bulletClose.value = result;
+                //Debug.Log("Bullet result: " + result);
+                return b;
+            }
+            else
+            {
+                result = "NO";
+            }
+        }
+        bulletClose.value = result;
+        
+        //Debug.Log("Bullet result: " + result);
+        return null;
     }
 
     public void InstantiateAStar(GameManager.SpecialPathNode[,] board)
@@ -85,37 +269,12 @@ public class Enemy : Mover
         
     }
 
-    public override void Update()
+    private IEnumerator ColorSprite()
     {
-        Position = transform.position;
-        if ((CurrentGoalNode != null) && IsAtGoal(CurrentGoalNode.Value.tile.transform.position))
-        {
-            
-            LinkedListNode<GameManager.SpecialPathNode> next = CurrentGoalNode.Next;
-            if (next == null)
-            {
-                //Debug.Log("Final node found");
-                //end of list
-                IsMoving = false;
-            }
-            else
-            {
-                MoveToNode(next);
-            }
-        }
-        else
-        {
-            if (CurrentGoalNode != null)
-            {
-                TileX = CurrentGoalNode.Value.X;
-                TileY = CurrentGoalNode.Value.Y;
-            }
-        }
-        if (IsMoving)
-        {
-            //Debug.Log("goal: " + GoalPos);
-            transform.position = Vector3.MoveTowards(transform.position, GoalPos, Speed * Time.deltaTime);
-        }
+        Color original = sprite.color;
+        sprite.color = new Color(0f, 0f, 0f, 1f);
+        yield return new WaitForSeconds(0.1f);
+        sprite.color = original;
     }
 
     //Perhaps trigger animations here?
@@ -125,6 +284,7 @@ public class Enemy : Mover
         if (Player != null)
         {
             Player.DecrementHealth(5);
+            StartCoroutine(ColorSprite());
         }
     }
 
@@ -207,6 +367,7 @@ public class Enemy : Mover
             //this.UnPauseMoving();
             //Debug.Log("Restored goal after exit collision: " + GoalPos.ToString());
             CancelInvoke("Attack");
+            attacking = false;
         }
         else if (col.gameObject.tag == "Terrain")
         {

@@ -24,12 +24,11 @@ public class DecisionMaker
     {
         List<string> empty = new List<string>();
         root = new Node<string>("Player Distance");
-        root.AddChild(new Node<string>("ATTACK"), "CLOSE");
         root.AddChild(new Node<string>("CHASE"), "SIGHT");
-        Node<string> playerHP = new Node<string>("Enemy HP");
+        Node<string> playerHP = new Node<string>("Bullet Visible");
         root.AddChild(playerHP, "FAR");
-        playerHP.AddChild(new Node<string>("ROAM"), "HIGH");
-        playerHP.AddChild(new Node<string>("DEFEND"), "LOW");
+        playerHP.AddChild(new Node<string>("STAY"), "NO");
+        playerHP.AddChild(new Node<string>("FINDBULLET"), "YES");
 
         
         /**
@@ -178,11 +177,11 @@ public class DecisionTree<T>
 
             foreach (AttributeValue<T> attr in attributes)
             {
-                Debug.Log("Current name: " + cur.Name + "; attr name: " + attr.name);
+                //Debug.Log("Current name: " + cur.Name + "; attr name: " + attr.name);
                 string attrName = attr.name;
                 if (attrName.Equals(attribute))
                 {
-                    Debug.Log("attrval: " + attr.value);
+                    //Debug.Log("attrval: " + attr.value);
                     cur.SetValue(attr.value);
                     cur = cur.GetChildFromClassification();
                     break;
@@ -203,6 +202,12 @@ public class AttributeValue<T>
 {
     public string name;
     public T value;
+
+    public AttributeValue(string name)
+    {
+        this.name = name;
+    }
+
     public AttributeValue(string name, T value)
     {
         this.name = name;

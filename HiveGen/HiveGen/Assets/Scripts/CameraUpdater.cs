@@ -10,7 +10,17 @@ public class CameraUpdater : MonoBehaviour {
 	void Update () {
         if (target == null)
         {
-            target = GameObject.FindGameObjectWithTag("Player").transform;
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                target = playerObj.transform;
+            }
+            else
+            {
+                DestroyObject(this);
+                return;
+            }
+            
         }
 		transform.position = new Vector3(target.position.x, target.position.y, target.position.z - distance);
 	}

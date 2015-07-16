@@ -15,14 +15,14 @@ public class Bullet : Mover
     Rigidbody2D rgd;
 	// Use this for initialization
     //To make this work, make the sprite larger.
-	void Start ()
+	public override void Start ()
     {
         m_StartTime = Time.time;
         rgd = this.gameObject.GetComponent<Rigidbody2D>();
 	}
 	
 	// Update is called once per frame
-	void Update ()
+	public override void Update ()
     {
         //Debug.Log("Bullet");
         if (Time.time - m_StartTime <= 15)
