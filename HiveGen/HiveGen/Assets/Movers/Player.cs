@@ -20,7 +20,7 @@ public class Player : Mover
     private Rigidbody2D rgdBdy;
 
 	public Text HealthText;
-	private float nextLevelDelay = 1f;
+	private float nextLevelDelay = 0.5f;
 
 
     public GameObject BulletPrefab;

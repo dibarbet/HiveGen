@@ -117,6 +117,7 @@ public class GameManager : MonoBehaviour {
                 }
             }
         }
+        Start();
 	}
 
 	private void HideLevelImage(){
