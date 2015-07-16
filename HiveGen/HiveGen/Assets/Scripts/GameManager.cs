@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour {
 	public float levelStartDelay = 2f;
 	public Text levelText;
 	private GameObject levelImage;
-	private int level = 1;
+	private int level = 2;
 	private bool doingSetup;
 
 	// Use this for initialization
