@@ -14,7 +14,7 @@ public class Enemy : Mover
     }
 
     DecisionMaker MakeDecision;
-    string curDecision;
+    public string curDecision;
     string prevDecision;
 
     AttributeValue<string> playerDist;
@@ -22,6 +22,13 @@ public class Enemy : Mover
     AttributeValue<string> prevDistDecision;
     AttributeValue<string> prevBulletDecision;
 
+    AttributeValue<string> prevPlayerHPDecision;
+    AttributeValue<string> playerHPDecision;
+
+    AttributeValue<string> prevEnemyAttackedDecision;
+    AttributeValue<string> enemyAttackedDecision;
+
+    GameObject Exit;
 
     private int m_MaxHealth = 100;
     public int HealthPoints { get; private set; }
@@ -47,6 +54,10 @@ public class Enemy : Mover
         bulletClose = new AttributeValue<string>("Bullet Visible");
         prevDistDecision = new AttributeValue<string>("Player Distance");
         prevBulletDecision = new AttributeValue<string>("Bullet Visible");
+        prevPlayerHPDecision = new AttributeValue<string>("Player HP");
+        playerHPDecision = new AttributeValue<string>("Player HP");
+        prevEnemyAttackedDecision = new AttributeValue<string>("Enemy Has Sight");
+        enemyAttackedDecision = new AttributeValue<string>("Enemy Has Sight");
         Position = this.transform.position;
         IsMoving = false;
         HealthPoints = m_MaxHealth;
@@ -58,6 +69,7 @@ public class Enemy : Mover
     public void Start()
     {
         Player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        Exit = GameObject.FindGameObjectWithTag("Exit");
     }
 
 
@@ -70,6 +82,7 @@ public class Enemy : Mover
     public override void Update()
     {
         Bullet target = null;
+        Enemy attacked = null;
         //Debug.Log("CURRENT DECISION: " + curDecision);
 
         prevDecision = curDecision;
@@ -85,8 +98,10 @@ public class Enemy : Mover
         }
         //Get bullet if close to move to
         target = BulletVisibleDecision();
+        PlayerHPDecision();
+        attacked = FriendlyEnemyHasSight();
         //Only need to recalculate distance to player if the player changes tiles
-        if (prevBulletDecision.value != bulletClose.value || nTile != prevPlayerTile)
+        if (prevBulletDecision.value != bulletClose.value || nTile != prevPlayerTile || curDecision == "DONEMOVINGTOBULLET" || curDecision == "DONEMOVINGTOENEMY")
         {
             //Prevents too many decisions from happening
             if ((Time.time > nextActionTime))
@@ -98,14 +113,16 @@ public class Enemy : Mover
                 string dis = DistanceToPlayerDecision();
                 if (dis == "FAR")
                 {
-                    if (curDecision != "MOVINGTOBULLET")
+                    if (curDecision != "MOVINGTOBULLET")// && curDecision != "MOVINGTOENEMY")
                     {
-                        curDecision = MakeDecision.MakeDecision(new List<AttributeValue<string>>() { playerDist, bulletClose });
+                        //Debug.Log("Making a decision");
+                        curDecision = MakeDecision.MakeDecision(new List<AttributeValue<string>>() { playerDist, bulletClose, playerHPDecision, enemyAttackedDecision });
                     }
                 }
                 else
                 {
-                    curDecision = MakeDecision.MakeDecision(new List<AttributeValue<string>>() { playerDist, bulletClose });
+                    //Debug.Log("Making a decision");
+                    curDecision = MakeDecision.MakeDecision(new List<AttributeValue<string>>() { playerDist, bulletClose, playerHPDecision, enemyAttackedDecision });
                 }
                 
             }   
@@ -121,7 +138,7 @@ public class Enemy : Mover
             GameManager.SpecialPathNode playerTile = Player.GetTileOn();
             this.MoveToTile(playerTile);
             //To make sure it keeps moving, rather than sitting on "CHASE"
-            curDecision = "MOVING";
+            curDecision = "FINDINGPLAYER";
         }
         else if (curDecision == "STAY")
         {
@@ -135,6 +152,30 @@ public class Enemy : Mover
                 Debug.Log(target);
                 this.MoveToTile(target.GetTileOn());
                 curDecision = "MOVINGTOBULLET";
+            }
+        }
+        else if (curDecision == "DEFENDGOAL")
+        {
+            GameManager.SpecialPathNode exitTile = GameManager.ExitTile;
+            Debug.Log("EXit: " + exitTile.X + ", " + exitTile.Y);
+            this.MoveToTile(exitTile);
+            curDecision = "DEFENDINGGOAL";
+        }
+        else if (curDecision == "DEFENDINGGOAL")
+        {
+            float dist = Vector3.Distance(this.transform.position, GameManager.ExitTile.tile.transform.position);
+            if (dist < 2.0f)
+            {
+                IsMoving = false;
+                curDecision = "ATGOAL";
+            }
+        }
+        else if (curDecision == "FINDENEMY")
+        {
+            if (attacked != null)
+            {
+                this.MoveToTile(attacked.GetTileOn());
+                curDecision = "MOVINGTOENEMY";
             }
         }
 
@@ -151,6 +192,10 @@ public class Enemy : Mover
                 if (curDecision == "MOVINGTOBULLET")
                 {
                     curDecision = "DONEMOVINGTOBULLET";
+                }
+                if (curDecision == "MOVINGTOENEMY")
+                {
+                    curDecision = "DONEMOVINGTOENEMY";
                 }
             }
             else
@@ -175,7 +220,47 @@ public class Enemy : Mover
 
     float minDist = 5.0f;
 
-    
+    public string PlayerHPDecision()
+    {
+        prevPlayerHPDecision.value = playerHPDecision.value;
+        int playerHP = Player.HealthPoints;
+        if (playerHP < 50)
+        {
+            playerHPDecision.value = "LOW";
+            return "LOW";
+            
+        }
+        else
+        {
+            playerHPDecision.value = "HIGH";
+            return "HIGH";
+        }
+    }
+
+
+    public Enemy FriendlyEnemyHasSight()
+    {
+        prevEnemyAttackedDecision.value = enemyAttackedDecision.value;
+        Enemy[] enemies = FindObjectsOfType<Enemy>();
+        if (enemies == null || enemies.Length == 0)
+        {
+            enemyAttackedDecision.value = "NO";
+            return null;
+        }
+        else
+        {
+            foreach(Enemy e in enemies)
+            {
+                if (e.curDecision == "FINDINGPLAYER")
+                {
+                    enemyAttackedDecision.value = "YES";
+                    return e;
+                }
+            }
+        }
+        enemyAttackedDecision.value = "NO";
+        return null;
+    }
 
     public string DistanceToPlayerDecision()
     {

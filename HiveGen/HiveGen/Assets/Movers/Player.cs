@@ -14,7 +14,7 @@ public class Player : Mover
     }
 
     private int m_MaxHealth = 100;
-    public int HealthPoints { get; private set; }
+    public int HealthPoints { get; set; }
 
     private Collider2D col2D;
     private Rigidbody2D rgdBdy;

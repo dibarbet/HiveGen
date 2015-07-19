@@ -22,13 +22,27 @@ public class DecisionMaker
 	// Use this for initialization
 	public DecisionMaker()
     {
-        List<string> empty = new List<string>();
         root = new Node<string>("Player Distance");
+        //leaf
         root.AddChild(new Node<string>("CHASE"), "SIGHT");
-        Node<string> playerHP = new Node<string>("Bullet Visible");
-        root.AddChild(playerHP, "FAR");
-        playerHP.AddChild(new Node<string>("STAY"), "NO");
-        playerHP.AddChild(new Node<string>("FINDBULLET"), "YES");
+        Node<string> EnemyHasSight = new Node<string>("Enemy Has Sight");
+        root.AddChild(EnemyHasSight, "FAR");
+        //reached leaf
+        EnemyHasSight.AddChild(new Node<string>("FINDENEMY"), "YES");
+        
+        Node<string> bulletVisible = new Node<string>("Bullet Visible");
+        EnemyHasSight.AddChild(bulletVisible, "NO");
+        //leaf
+        bulletVisible.AddChild(new Node<string>("FINDBULLET"), "YES");
+
+        Node<string> playerHP = new Node<string>("Player HP");
+        bulletVisible.AddChild(playerHP, "NO");
+        //leaf
+        playerHP.AddChild(new Node<string>("STAY"), "HIGH");
+        //leaf
+        playerHP.AddChild(new Node<string>("DEFENDGOAL"), "LOW");
+
+        
 
         
         /**
@@ -157,6 +171,7 @@ public class DecisionTree<T>
 
     public string EvaluateTree()
     {
+        //Debug.Log("Attributes: " + attributes[0].value + ", " + attributes[1].value + ", " + attributes[2].value + ", " + attributes[3].value);
         Node<T> cur = root;
         string retVal = cur.Name;
         int iterations = 100;

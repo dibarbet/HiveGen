@@ -10,12 +10,16 @@ public class GameManager : MonoBehaviour {
 	public static GameManager instance = null; //This makes GameManager a singleton, so only one can exist.
 	public BoardManager boardScript;
 
+    public static SpecialPathNode ExitTile;
+
 	public static SpecialPathNode[,] boardArray;
 
-    	private Enemy[] enemies;
-    	private SpecialPathNode PlayerLocation;
-    	private SpecialPathNode PreviousPlayerLocation;
-    	private Player player;
+    private Enemy[] enemies;
+    private SpecialPathNode PlayerLocation;
+    private SpecialPathNode PreviousPlayerLocation;
+    private Player player;
+
+    private static int PLAYERHP;
 
 	//UI Elements:
 	public float levelStartDelay = 2f;
@@ -26,6 +30,7 @@ public class GameManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Awake () {
+        PLAYERHP = 100;
 		if(instance == null) //Make sure only one instance of GameManager exists
 			instance = this;
 		else if (instance != this)
@@ -54,6 +59,7 @@ public class GameManager : MonoBehaviour {
 	}
 
 	void OnLevelWasLoaded(int index){
+        PLAYERHP = player.HealthPoints;
 		level++;
 		InitGame();
 	}
@@ -75,17 +81,32 @@ public class GameManager : MonoBehaviour {
                 e.InstantiateAStar(boardArray);
             }
         }
-
+        //Get location of exit tile
+        foreach (SpecialPathNode n in boardArray)
+        {
+            if (n != null)
+            {
+                if (n.tile != null)
+                {
+                    if (n.tile.gameObject.tag == "Exit")
+                    {
+                        ExitTile = n;
+                        n.IsWall = false;
+                        Debug.Log("FOUND EXIT");
+                    }
+                }
+                
+            }
+        }
 
         //Get player location
         player = FindObjectOfType<Player>();
         Debug.Log("PLAYER: " + player);
+        player.HealthPoints = PLAYERHP;
         PlayerLocation = player.GetComponent<Player>().GetTileOn();
 
 
-        DecisionMaker dec = new DecisionMaker();
-        Debug.Log("TREE: " + dec.tree);
-        Debug.Log("RESULT: " + dec.MakeDecision(new List<AttributeValue<string>>() { new AttributeValue<string>("Player Distance", "FAR"), new AttributeValue<string>("Bullet Visible", "NO") }));
+        
     }
 
 	void InitGame(){
