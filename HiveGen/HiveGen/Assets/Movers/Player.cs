@@ -64,6 +64,9 @@ public class Player : Mover
         rotation *= Time.deltaTime;
         transform.Translate(0, translation, 0);
         transform.Rotate(0, 0, -rotation);*/
+
+		if (HealthText.text != "Health: "+HealthPoints)
+			HealthText.text = "Health: "+HealthPoints;
     }
 
     public override bool Die(){

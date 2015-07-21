@@ -114,7 +114,7 @@ public class GameManager : MonoBehaviour {
 		levelImage = GameObject.Find("LevelImage");
 		levelText = levelImage.GetComponentInChildren<Text>();
 //		levelText = GameObject.Find("LevelText").GetComponent<Text>();
-		levelText.text = "Level: "+level+"/10";
+		levelText.text = "Level: "+level;
 		levelImage.SetActive(true);
 		Invoke("HideLevelImage", levelStartDelay);
 
