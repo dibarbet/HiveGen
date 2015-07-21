@@ -96,7 +96,7 @@ namespace Assets.Scripts.dstarlite
 
     class state_hash : IEqualityComparer<State>
     {
-        public override int GetHashCode(State s)
+        public int GetHashCode(State s)
         {
  	         return s.x + 34245*s.y;
         }

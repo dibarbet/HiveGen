@@ -119,7 +119,6 @@ public class Player : Mover
     
     void OnCollisionEnter2D(Collision2D col)
     {
-		print ("collision...");
         if (col.gameObject.tag == "Enemy")
         {
             //DecrementHealth(1);
@@ -129,9 +128,8 @@ public class Player : Mover
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.tag == "Exit")
+        if (other.gameObject.tag == "Exit" && GameManager.instance.exitBlock == null)
         {
-            print("Exiting level");
             Invoke("NextLevel", nextLevelDelay);
         }
     }
@@ -157,7 +155,6 @@ public class Player : Mover
     }
 
 	private void NextLevel(){
-		print ("called NextLevel");
 		Application.LoadLevel(Application.loadedLevel);
 	}
 }

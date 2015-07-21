@@ -340,7 +340,6 @@ public class BoardManager : MonoBehaviour {
 		//Now place the player and enemies on the map based on the level and traversable space.
 		Vector3 playerLoc = new Vector3(enterX, enterY+1, 0f);
 		Instantiate(player, playerLoc, Quaternion.identity);
-		print ("level:"+level);
 		int numEnemies = level*2;//Mathf.Max((int)(Mathf.Log(level, 2f)+1)*level/3,level);
 		for (int i=0; i<numEnemies; i++){
 			int randX = -1;
@@ -515,8 +514,6 @@ public class BoardManager : MonoBehaviour {
 		//First, figure out how big the 2d array needs to be to contain the map, then create the empty array.
 		List<Vector3> sortByX = activeCells.Keys.ToList();
 		sortByX.Sort((a, b) => a.x.CompareTo(b.x));
-//		for (int i=0; i<sortByX.Count; i++)
-//			print (sortByX[i]);
 		int minX = (int)sortByX[0].x;
 		int xNum = (int)sortByX[sortByX.Count-1].x - minX + 1;
 		List<Vector3> sortByY = activeCells.Keys.ToList();

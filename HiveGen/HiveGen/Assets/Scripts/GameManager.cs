@@ -24,9 +24,13 @@ public class GameManager : MonoBehaviour {
 	//UI Elements:
 	public float levelStartDelay = 2f;
 	public Text levelText;
+	public Text exitText;
 	private GameObject levelImage;
-	private int level = 2;
+	private int level = 1;
 	private bool doingSetup;
+
+	public GameObject exitBlock;
+	public float exitMessageDelay = 2f;
 
 	// Use this for initialization
 	void Awake () {
@@ -38,6 +42,7 @@ public class GameManager : MonoBehaviour {
 
 		DontDestroyOnLoad(gameObject); //Allow GameManager to persist when the level changes.
 		boardScript = GetComponent<BoardManager>();
+		exitText = GameObject.Find ("ExitText").GetComponent<Text>();
 		InitGame();
         int rowLength = boardArray.GetLength(0);
         int colLength = boardArray.GetLength(1);
@@ -111,6 +116,10 @@ public class GameManager : MonoBehaviour {
 
 	void InitGame(){
 		doingSetup = true;
+		if (exitText==null){
+			exitText = GameObject.Find ("ExitText").GetComponent<Text>();
+		}else if (exitText!=null && exitText.enabled)
+			exitText.enabled = false;
 		levelImage = GameObject.Find("LevelImage");
 		levelText = levelImage.GetComponentInChildren<Text>();
 //		levelText = GameObject.Find("LevelText").GetComponent<Text>();
@@ -148,6 +157,14 @@ public class GameManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		int numEnemies = FindObjectsOfType<Enemy>().Length;
+		if (exitBlock != null && numEnemies == 0){
+			GameObject.Destroy(exitBlock);
+			showExitMessage();
+		}else if(ExitTile != null && numEnemies > 0 && exitBlock==null){
+			exitBlock = Instantiate(boardScript.obstacleTile, new Vector3(ExitTile.X, ExitTile.Y, 0f), Quaternion.identity) as GameObject;
+			hideExitMessage();
+		}
         if (player == null || enemies.Length == 0)
         {
             Mover[] movers = FindObjectsOfType<Mover>();
@@ -182,7 +199,7 @@ public class GameManager : MonoBehaviour {
 
 	public void GameOver(){
 		doingSetup = true;
-		levelText.text = "Game Over! You died on level "+level+"/10.";
+		levelText.text = "Game Over! You died on level "+level+".";
 		levelImage.SetActive(true);
 	}
 
@@ -197,6 +214,15 @@ public class GameManager : MonoBehaviour {
             }
         }
     }
+
+	private void showExitMessage(){
+		exitText.enabled = true;
+		Invoke("hideExitMessage", exitMessageDelay);
+	}
+
+	private void hideExitMessage(){
+		exitText.enabled = false;
+	}
     
     public class SpecialPathNode : IPathNode<System.Object>
     {
