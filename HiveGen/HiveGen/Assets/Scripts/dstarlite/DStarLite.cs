@@ -17,6 +17,9 @@ namespace Assets.Scripts.dstarlite
         double k_m;
         Dictionary<State, double> rhs;
         Dictionary<State, double> g;
+        //Dictionary of a state to its predecessors or successors
+        Dictionary<State, List<State>> Pred;
+        Dictionary<State, List<State>> Succ;
 
 
         //other
@@ -98,6 +101,14 @@ namespace Assets.Scripts.dstarlite
                 X = x;
                 Y = y;
             }
+
+            //Create dummy state for comparisons.
+            public State(Tuple<double, double> n_k)
+            {
+                X = -1;
+                Y = -1;
+                k = n_k;
+            }
         }
 
         public DstarLite(TPathNode[,] inGrid)
@@ -127,8 +138,8 @@ namespace Assets.Scripts.dstarlite
             //s_last = s_start
             s_last = s_start;
             Initialize();
-            //Next step:
             //ComputeShortestPath()
+            ComputeShortestPath();
         }
         
         public void Initialize()
@@ -142,8 +153,8 @@ namespace Assets.Scripts.dstarlite
             {
                 for(int j = 0; j < Height; j++)
                 {
-                    rhs[m_SearchSpace[i,j]] = double.MaxValue;
-                    g[m_SearchSpace[i, j]] = double.MaxValue;
+                    rhs[m_SearchSpace[i,j]] = double.PositiveInfinity;
+                    g[m_SearchSpace[i, j]] = double.PositiveInfinity;
                 }
             }
             //rhs(s_goal) = 0
@@ -151,6 +162,58 @@ namespace Assets.Scripts.dstarlite
             //U.Insert(s_goal, CalculateKey(s_goal)
             s_goal.k = CalculateKey(s_goal);
             U.Push(s_goal);
+        }
+
+        public void ComputeShortestPath()
+        {
+            Tuple<double, double> k_old = new Tuple<double,double>(0,0);
+            //while (U.TopKey() < CalculateKey(s_start) || rhs(s_start) != g(s_start))
+            //I create a dummy state to compare keys, since compararer is implemented there.
+            while (U.Peek() < new State(CalculateKey(s_start)) || rhs[s_start] != g[s_start])
+            {
+                //k_old = U.TopKey()
+                k_old = U.Peek().k;
+                //u = U.Pop()
+                State u = U.Pop();
+                //if (k_old < CalculateKey(u)
+                //Create dummy state to compare keys
+                if (new State(k_old) < new State(CalculateKey(u)))
+                {
+                    //U.Insert(u, CalculateKey(u))
+                    //Have to insert state u with key value of CalculateKey(u), so update u's k value
+                    u.k = CalculateKey(u);
+                    U.Push(u);
+                }
+                //else if (g(u) > rhs(u))
+                else if (g[u] > rhs[u])
+                {
+                    //g(u) = rhs(u)
+                    g[u] = rhs[u];
+                    //for all s element Pred(u) UpdateVertex(s)
+                    foreach(State s in Pred[u])
+                    {
+                        UpdateVertex(s);
+                    }
+                }
+                //else
+                else
+                {
+                    //g(u) = infinity
+                    g[u] = double.PositiveInfinity;
+                    //For all s element of Pred(u) Union {u} UpdateVertex(s)
+                    List<State> u_Pred = Pred[u];
+                    u_Pred.Add(u);
+                    foreach(State s in u_Pred)
+                    {
+                        UpdateVertex(s);
+                    }
+                }
+            }
+        }
+
+        public void UpdateVertex(State s)
+        {
+
         }
 
         public Tuple<double, double> CalculateKey(State s)
