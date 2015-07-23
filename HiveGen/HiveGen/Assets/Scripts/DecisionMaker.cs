@@ -20,28 +20,38 @@ public class DecisionMaker
     Node<string> root;
 
 	// Use this for initialization
-	public DecisionMaker()
+	public DecisionMaker(bool defend)
     {
-        root = new Node<string>("Player Distance");
-        //leaf
-        root.AddChild(new Node<string>("CHASE"), "SIGHT");
-        Node<string> EnemyHasSight = new Node<string>("Enemy Has Sight");
-        root.AddChild(EnemyHasSight, "FAR");
-        //reached leaf
-        EnemyHasSight.AddChild(new Node<string>("FINDENEMY"), "YES");
-        
-        Node<string> bulletVisible = new Node<string>("Bullet Visible");
-        EnemyHasSight.AddChild(bulletVisible, "NO");
-        //leaf
-        bulletVisible.AddChild(new Node<string>("FINDBULLET"), "YES");
+        if (!defend)
+        {
+            root = new Node<string>("Player Distance");
+            //leaf
+            root.AddChild(new Node<string>("CHASE"), "SIGHT");
+            Node<string> thisHP = new Node<string>("This HP");
+            root.AddChild(thisHP, "FAR");
+            thisHP.AddChild(new Node<string>("DEFENDGOAL"), "LOW");
 
-        Node<string> playerHP = new Node<string>("Player HP");
-        bulletVisible.AddChild(playerHP, "NO");
-        //leaf
-        playerHP.AddChild(new Node<string>("STAY"), "HIGH");
-        //leaf
-        playerHP.AddChild(new Node<string>("DEFENDGOAL"), "LOW");
+            Node<string> EnemyHasSight = new Node<string>("Enemy Has Sight");
+            thisHP.AddChild(EnemyHasSight, "HIGH");
+            //reached leaf
+            EnemyHasSight.AddChild(new Node<string>("FINDENEMY"), "YES");
 
+            Node<string> bulletVisible = new Node<string>("Bullet Visible");
+            EnemyHasSight.AddChild(bulletVisible, "NO");
+            //leaf
+            bulletVisible.AddChild(new Node<string>("FINDBULLET"), "YES");
+
+            Node<string> playerHP = new Node<string>("Player HP");
+            bulletVisible.AddChild(playerHP, "NO");
+            //leaf
+            playerHP.AddChild(new Node<string>("STAY"), "HIGH");
+            //leaf
+            playerHP.AddChild(new Node<string>("DEFENDGOAL"), "LOW");
+        }
+        else
+        {
+            root = new Node<string>("tt");
+        }
         
 
         

@@ -30,6 +30,9 @@ public class Enemy : Mover
     AttributeValue<string> prevEnemyAttackedDecision;
     AttributeValue<string> enemyAttackedDecision;
 
+    AttributeValue<string> chasingDecision;
+    AttributeValue<string> thisHPDecision;
+
     GameObject Exit;
 
     private int m_MaxHealth = 100;
@@ -39,6 +42,7 @@ public class Enemy : Mover
     private SpriteRenderer sprite;
 
     private Player Player;
+    int HPDECISION;
 
     public int TileX { get; set; }
     public int TileY { get; set; }
@@ -53,7 +57,9 @@ public class Enemy : Mover
     //Use awake, start is not always called at object creation, leading to null reference errors
     public void Awake()
     {
-        MakeDecision = new DecisionMaker();
+        HPDECISION = UnityEngine.Random.Range(30, 70);
+
+        MakeDecision = new DecisionMaker(false);
         playerDist = new AttributeValue<string>("Player Distance");
         bulletClose = new AttributeValue<string>("Bullet Visible");
         prevDistDecision = new AttributeValue<string>("Player Distance");
@@ -62,6 +68,10 @@ public class Enemy : Mover
         playerHPDecision = new AttributeValue<string>("Player HP");
         prevEnemyAttackedDecision = new AttributeValue<string>("Enemy Has Sight");
         enemyAttackedDecision = new AttributeValue<string>("Enemy Has Sight");
+
+        chasingDecision = new AttributeValue<string>("Chasing Enemy");
+        thisHPDecision = new AttributeValue<string>("This HP");
+
         Position = this.transform.position;
         IsMoving = false;
         HealthPoints = m_MaxHealth;
@@ -74,7 +84,7 @@ public class Enemy : Mover
     {
         Player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         Exit = GameObject.FindGameObjectWithTag("Exit");
-        TestDstar();
+        //TestDstar();
     }
 
 
@@ -105,6 +115,7 @@ public class Enemy : Mover
         target = BulletVisibleDecision();
         PlayerHPDecision();
         attacked = FriendlyEnemyHasSight();
+        EnemyHPDecision();
         //Only need to recalculate distance to player if the player changes tiles
         if (prevBulletDecision.value != bulletClose.value || nTile != prevPlayerTile || curDecision == "DONEMOVINGTOBULLET" || curDecision == "DONEMOVINGTOENEMY")
         {
@@ -121,13 +132,13 @@ public class Enemy : Mover
                     if (curDecision != "MOVINGTOBULLET")// && curDecision != "MOVINGTOENEMY")
                     {
                         //Debug.Log("Making a decision");
-                        curDecision = MakeDecision.MakeDecision(new List<AttributeValue<string>>() { playerDist, bulletClose, playerHPDecision, enemyAttackedDecision });
+                        curDecision = MakeDecision.MakeDecision(new List<AttributeValue<string>>() { playerDist, bulletClose, playerHPDecision, enemyAttackedDecision, thisHPDecision });
                     }
                 }
                 else
                 {
                     //Debug.Log("Making a decision");
-                    curDecision = MakeDecision.MakeDecision(new List<AttributeValue<string>>() { playerDist, bulletClose, playerHPDecision, enemyAttackedDecision });
+                    curDecision = MakeDecision.MakeDecision(new List<AttributeValue<string>>() { playerDist, bulletClose, playerHPDecision, enemyAttackedDecision, thisHPDecision });
                 }
                 
             }   
@@ -242,7 +253,35 @@ public class Enemy : Mover
         }
     }
 
+    public string ChasingDecision()
+    {
+        if (curDecision == "MOVINGTOENEMY")
+        {
+            chasingDecision.value = "YES";
+            return "YES";
+        }
+        else
+        {
+            chasingDecision.value = "NO";
+            return "NO";
+        }
+    }
 
+    public string EnemyHPDecision()
+    {
+        if (this.HealthPoints < HPDECISION)
+        {
+            thisHPDecision.value = "LOW";
+            return "LOW";
+        }
+        else
+        {
+            thisHPDecision.value = "HIGH";
+            return "HIGH";
+        }
+    }
+
+    //edit
     public Enemy FriendlyEnemyHasSight()
     {
         prevEnemyAttackedDecision.value = enemyAttackedDecision.value;
