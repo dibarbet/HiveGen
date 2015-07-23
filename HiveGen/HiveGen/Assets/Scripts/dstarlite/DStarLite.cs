@@ -159,8 +159,8 @@ namespace Assets.Scripts.dstarlite
 
             public static bool operator <(State s1, State s2)
             {
-                Debug.Log("s1: " + s1 + ";s2: " + s2);
-                Debug.Log("S1.k: " + s1.k + "; S2.k: " + s2.k);
+                //Debug.Log("s1: " + s1 + ";s2: " + s2);
+                //Debug.Log("S1.k: " + s1.k + "; S2.k: " + s2.k);
                 if (s1.k.Item1 + 0.000001 < s2.k.Item1) return true;
                 else if (s1.k.Item1 - 0.000001 > s2.k.Item1) return false;
                 return s1.k.Item2 < s2.k.Item2;
@@ -238,6 +238,7 @@ namespace Assets.Scripts.dstarlite
                     m_SearchSpace[x, y].IsWall = inGrid[x, y].IsWall;
                 }
             }
+            /*
             string matrix = "";
             for(int i = 0; i < Width; i++)
             {
@@ -246,7 +247,7 @@ namespace Assets.Scripts.dstarlite
                     matrix += m_SearchSpace[i, j] + ", ";
                 }
             }
-            //Debug.Log("MATRIX: " + matrix);
+            //Debug.Log("MATRIX: " + matrix);*/
         }
 
         public void InitializeGoals(int s_x, int s_y, int g_x, int g_y)
@@ -256,9 +257,61 @@ namespace Assets.Scripts.dstarlite
             s_goal = m_SearchSpace[g_x, g_y];
         }
 
+        public void UpdateStart(int s_x, int s_y)
+        {
+            s_start.X = s_x;
+            s_start.Y = s_y;
+
+            k_m += h(s_last, s_start);
+
+            s_start.k = CalculateKey(s_start);
+            s_last = s_start;
+        }
+
         public void UpdateGoal(int g_x, int g_y)
         {
+            /*
+            //list< pair<ipoint2, double> > toAdd;
+            List<State> toAdd = new List<State>();
+            //pair<ipoint2, double> tp;
+  
+            //ds_ch::iterator i;
+            //list< pair<ipoint2, double> >::iterator kk;
+            //for(i=cellHash.begin(); i!=cellHash.end(); i++) {
+            for (int i = 0; i < )
+              if (!close(i->second.cost, C1)) {
+                  tp.first.x = i->first.x;
+                  tp.first.y = i->first.y;
+                  tp.second = i->second.cost;
+                  toAdd.push_back(tp);
+              }
+            }
 
+            cellHash.clear();
+            openHash.clear();
+
+            while(!openList.empty())
+                openList.pop();
+  
+            k_m = 0;
+            s_goal.x  = x;
+            s_goal.y  = y;
+            cellInfo tmp;
+            tmp.g = tmp.rhs =  0;
+            tmp.cost = C1;
+
+            cellHash[s_goal] = tmp;
+
+            tmp.g = tmp.rhs = heuristic(s_start,s_goal);
+            tmp.cost = C1;
+            cellHash[s_start] = tmp;
+            s_start = calculateKey(s_start);
+
+            s_last = s_start;    
+
+            for (kk=toAdd.begin(); kk != toAdd.end(); kk++) {
+                updateCell(kk->first.x, kk->first.y, kk->second);
+            }*/
         }
 
         public void Replan()
@@ -334,12 +387,13 @@ namespace Assets.Scripts.dstarlite
             if (x >= 0 && y >= 0 && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             x += 1;
             if (x >= 0 && y >= 0 && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
+            /*
             string s2 = "Suc of (" + u.X + ", " + u.Y + "): [";
             foreach (State s_i in s)
             {
                 s2 += "(" + s_i.X + ", " + s_i.Y + "), ";
             }
-            //Debug.Log(s2);
+            Debug.Log(s2);*/
             return s;
         }
 
@@ -364,12 +418,13 @@ namespace Assets.Scripts.dstarlite
             if (x >= 0 && y >= 0 && u.IsWalkable() && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             x += 1;
             if (x >= 0 && y >= 0 && u.IsWalkable() && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
+            /*
             string s2 = "Pred of (" + u.X + ", " + u.Y + "): [";
             foreach(State s_i in s)
             {
                 s2 += "(" + s_i.X + ", " + s_i.Y + "), ";
             }
-            //Debug.Log(s2);
+            //Debug.Log(s2);*/
             return s;
         }
         
@@ -460,13 +515,14 @@ namespace Assets.Scripts.dstarlite
                 double min = double.PositiveInfinity;
                 foreach(State s in succesors)
                 {
+                    /*
                     Debug.Log("Update vertex s suc: " + s.X + ", " + s.Y);
                     string dict_s = "Dictionary: ";
                     foreach(State s2 in g.Keys)
                     {
                         dict_s += "(" + s2.X + ", " + s2.Y + "), ";
                     }
-                    Debug.Log(dict_s);
+                    Debug.Log(dict_s);*/
                     double val = Cost(u, s) + g[s];
                     if (val < min)
                     {
@@ -509,7 +565,7 @@ namespace Assets.Scripts.dstarlite
         {
             //return [ min( g(s), rhs(s) ) + h(s_start, s) + k_m ; min( g(s), rhs(s) ) ]
             Tuple<double, double> key = new Tuple<double,double>( (Math.Min(g[s], rhs[s]) + h(s_start, s) + k_m), Math.Min(g[s], rhs[s]) );
-            Debug.Log("key: " + key.Item1);
+            //Debug.Log("key: " + key.Item1);
             return key;
         }
 

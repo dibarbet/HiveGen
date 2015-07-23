@@ -177,6 +177,7 @@ namespace AStar
         public bool Remove(T item)
         {
             bool removed = InnerList.Remove(item);
+            /*
             List<T> copyList = new List<T>();
             foreach(T n in InnerList)
             {
@@ -186,7 +187,7 @@ namespace AStar
             foreach(T n in copyList)
             {
                 this.Push(n);
-            }
+            }*/
 
             return removed;
         }
