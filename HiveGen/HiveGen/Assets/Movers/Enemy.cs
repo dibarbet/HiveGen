@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using AStar;
+using Assets.Scripts.dstarlite;
+using Assets.Scripts;
 
 public class Enemy : Mover
 {
@@ -45,6 +47,8 @@ public class Enemy : Mover
     private LinkedList<GameManager.SpecialPathNode> path;
     private LinkedListNode<GameManager.SpecialPathNode> CurrentGoalNode;
 
+    private DstarLite<GameManager.SpecialPathNode, System.Object> dstar;
+
 
     //Use awake, start is not always called at object creation, leading to null reference errors
     public void Awake()
@@ -70,6 +74,7 @@ public class Enemy : Mover
     {
         Player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         Exit = GameObject.FindGameObjectWithTag("Exit");
+        TestDstar();
     }
 
 
@@ -314,6 +319,26 @@ public class Enemy : Mover
         
         //Debug.Log("Bullet result: " + result);
         return null;
+    }
+
+    public void InstantiateDStar(GameManager.SpecialPathNode[,] board)
+    {
+        dstar = new DstarLite<GameManager.SpecialPathNode, object>(board);
+    }
+
+    public void TestDstar()
+    {
+        GameManager.SpecialPathNode pTile = Player.GetTileOn();
+        GameManager.SpecialPathNode eTile = this.GetTileOn();
+        dstar.InitializeGoals(eTile.X, eTile.Y, pTile.X, pTile.Y);
+        dstar.Replan();
+        List<GameManager.SpecialPathNode> p = dstar.GetPath();
+        string s_p = "";
+        foreach(GameManager.SpecialPathNode n in p)
+        {
+            s_p += "(" + n.X + ", " + n.Y + ") ";
+        }
+        Debug.Log(s_p);
     }
 
     public void InstantiateAStar(GameManager.SpecialPathNode[,] board)

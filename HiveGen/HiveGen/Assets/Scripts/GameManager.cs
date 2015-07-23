@@ -84,6 +84,7 @@ public class GameManager : MonoBehaviour {
                 e.TileY = tile.Y;
                 //Debug.Log("Enemy: " + e.TileX + ", " + e.TileY + "; Player: " + tile.X + ", " + tile.Y);
                 e.InstantiateAStar(boardArray);
+                e.InstantiateDStar(boardArray);
             }
         }
         //Get location of exit tile

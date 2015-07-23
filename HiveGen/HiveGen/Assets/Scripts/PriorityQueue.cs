@@ -160,5 +160,23 @@ namespace AStar
         {
             get { return InnerList.Count; }
         }
+
+        public bool InQueue(T item)
+        {
+            if (item == null)
+            {
+                return false;
+            }
+            if (InnerList.Contains(item))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool Remove(T item)
+        {
+            return InnerList.Remove(item);
+        }
     }
 }
