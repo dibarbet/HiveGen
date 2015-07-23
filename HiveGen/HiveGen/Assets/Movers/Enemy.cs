@@ -84,7 +84,7 @@ public class Enemy : Mover
     {
         Player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         Exit = GameObject.FindGameObjectWithTag("Exit");
-        //TestDstar();
+        TestDstar();
     }
 
 

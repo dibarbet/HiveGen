@@ -118,6 +118,14 @@ namespace Assets.Scripts.dstarlite
 
             public static bool operator ==(State s1, State s2)
             {
+                if (System.Object.ReferenceEquals(s1, s2))
+                {
+                    return true;
+                }
+                if ((object)s1 == null || (object)s2 == null)
+                {
+                    return false;
+                }
                 //Debug.Log("State == Equals");
                 return ((s1.X == s2.X) && (s1.Y == s2.Y));
             }
@@ -151,7 +159,8 @@ namespace Assets.Scripts.dstarlite
 
             public static bool operator <(State s1, State s2)
             {
-                //Debug.Log("S1.k: " + s1.k + "; S2.k: " + s2.k);
+                Debug.Log("s1: " + s1 + ";s2: " + s2);
+                Debug.Log("S1.k: " + s1.k + "; S2.k: " + s2.k);
                 if (s1.k.Item1 + 0.000001 < s2.k.Item1) return true;
                 else if (s1.k.Item1 - 0.000001 > s2.k.Item1) return false;
                 return s1.k.Item2 < s2.k.Item2;
@@ -210,9 +219,11 @@ namespace Assets.Scripts.dstarlite
 
         public DstarLite(GameManager.SpecialPathNode[,] inGrid)
         {
+            SearchSpace = inGrid;
             rhs = new Dictionary<State, double>(new StateComparer());
             g = new Dictionary<State, double>(new StateComparer());
             U = new PriorityQueue<State>(new StateComparer());
+            Path = new List<State>();
             Width = inGrid.GetLength(0);
             Height = inGrid.GetLength(1);
             m_SearchSpace = new State[Width, Height];
@@ -303,28 +314,26 @@ namespace Assets.Scripts.dstarlite
 
         public List<State> Succ(State u)
         {
-            u = new State(u.X, u.Y, u.k);
             List<State> s = new List<State>();
             if (!u.IsWalkable()) return s;
-            u.k = new Tuple<double, double>(-1, -1);
             int x = u.X;
             int y = u.Y;
             x += 1;
-            if (x >= 0 && y >= 0) s.Insert(0, new State(x, y, new Tuple<double, double>(-1, -1)));
+            if (x >= 0 && y >= 0 && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             y += 1;
-            s.Insert(0, new State(x, y, new Tuple<double, double>(-1, -1)));
+            if (x >= 0 && y >= 0 && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             x -= 1;
-            if (x >= 0 && y >= 0) s.Insert(0, m_SearchSpace[x, y]);
+            if (x >= 0 && y >= 0 && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             x -= 1;
-            if (x >= 0 && y >= 0) s.Insert(0, m_SearchSpace[x, y]);
+            if (x >= 0 && y >= 0 && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             y -= 1;
-            if (x >= 0 && y >= 0) s.Insert(0, m_SearchSpace[x, y]);
+            if (x >= 0 && y >= 0 && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             y -= 1;
-            if (x >= 0 && y >= 0) s.Insert(0, m_SearchSpace[x, y]);
+            if (x >= 0 && y >= 0 && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             x += 1;
-            if (x >= 0 && y >= 0) s.Insert(0, m_SearchSpace[x, y]);
+            if (x >= 0 && y >= 0 && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             x += 1;
-            if (x >= 0 && y >= 0) s.Insert(0, m_SearchSpace[x, y]);
+            if (x >= 0 && y >= 0 && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             string s2 = "Suc of (" + u.X + ", " + u.Y + "): [";
             foreach (State s_i in s)
             {
@@ -336,27 +345,25 @@ namespace Assets.Scripts.dstarlite
 
         public List<State> Pred(State u)
         {
-            u = new State(u.X, u.Y, u.k);
             List<State> s = new List<State>();
-            u.k = new Tuple<double, double>(-1, -1);
             int x = u.X;
             int y = u.Y;
             x += 1;
-            if (x >= 0 && y >= 0 && u.IsWalkable()) s.Insert(0, m_SearchSpace[x,y]);
+            if (x >= 0 && y >= 0 && u.IsWalkable() && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             y += 1;
-            if (x >= 0 && y >= 0 && u.IsWalkable()) s.Insert(0, m_SearchSpace[x, y]);
+            if (x >= 0 && y >= 0 && u.IsWalkable() && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             x -= 1;
-            if (x >= 0 && y >= 0 && u.IsWalkable()) s.Insert(0, m_SearchSpace[x, y]);
+            if (x >= 0 && y >= 0 && u.IsWalkable() && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             x -= 1;
-            if (x >= 0 && y >= 0 && u.IsWalkable()) s.Insert(0, m_SearchSpace[x, y]);
+            if (x >= 0 && y >= 0 && u.IsWalkable() && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             y -= 1;
-            if (x >= 0 && y >= 0 && u.IsWalkable()) s.Insert(0, m_SearchSpace[x, y]);
+            if (x >= 0 && y >= 0 && u.IsWalkable() && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             y -= 1;
-            if (x >= 0 && y >= 0 && u.IsWalkable()) s.Insert(0, m_SearchSpace[x, y]);
+            if (x >= 0 && y >= 0 && u.IsWalkable() && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             x += 1;
-            if (x >= 0 && y >= 0 && u.IsWalkable()) s.Insert(0, m_SearchSpace[x, y]);
+            if (x >= 0 && y >= 0 && u.IsWalkable() && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             x += 1;
-            if (x >= 0 && y >= 0 && u.IsWalkable()) s.Insert(0, m_SearchSpace[x, y]);
+            if (x >= 0 && y >= 0 && u.IsWalkable() && x < Width && y < Height) s.Insert(0, m_SearchSpace[x, y]);
             string s2 = "Pred of (" + u.X + ", " + u.Y + "): [";
             foreach(State s_i in s)
             {
@@ -393,12 +400,10 @@ namespace Assets.Scripts.dstarlite
             Tuple<double, double> k_old = new Tuple<double,double>(0,0);
             //while (U.TopKey() < CalculateKey(s_start) || rhs(s_start) != g(s_start))
             //I create a dummy state to compare keys, since compararer is implemented there.
-            //Debug.Log("U: " + U.Count);
-            //Debug.Log("Peek: " + U.Peek().k);
-            //Debug.Log(CalculateKey(s_start));
             State dummy = new State(CalculateKey(s_start));
+            State top = U.Peek();
             int iterations = 0;
-            while (U.Peek() < dummy || rhs[s_start] != g[s_start])
+            while ((U.Count > 0) && (top < dummy || rhs[s_start] != g[s_start]))
             {
                 if (iterations > maxIterations)
                 {
@@ -441,6 +446,7 @@ namespace Assets.Scripts.dstarlite
                         UpdateVertex(s);
                     }
                 }
+                top = U.Peek();
             }
         }
 
@@ -454,13 +460,13 @@ namespace Assets.Scripts.dstarlite
                 double min = double.PositiveInfinity;
                 foreach(State s in succesors)
                 {
-                    //Debug.Log("Update vertex s suc: " + s.X + ", " + s.Y);
+                    Debug.Log("Update vertex s suc: " + s.X + ", " + s.Y);
                     string dict_s = "Dictionary: ";
                     foreach(State s2 in g.Keys)
                     {
                         dict_s += "(" + s2.X + ", " + s2.Y + "), ";
                     }
-                    //Debug.Log(dict_s);
+                    Debug.Log(dict_s);
                     double val = Cost(u, s) + g[s];
                     if (val < min)
                     {
@@ -502,7 +508,9 @@ namespace Assets.Scripts.dstarlite
         public Tuple<double, double> CalculateKey(State s)
         {
             //return [ min( g(s), rhs(s) ) + h(s_start, s) + k_m ; min( g(s), rhs(s) ) ]
-            return new Tuple<double,double>( (Math.Min(g[s], rhs[s]) + h(s_start, s) + k_m), Math.Min(g[s], rhs[s]) );
+            Tuple<double, double> key = new Tuple<double,double>( (Math.Min(g[s], rhs[s]) + h(s_start, s) + k_m), Math.Min(g[s], rhs[s]) );
+            Debug.Log("key: " + key.Item1);
+            return key;
         }
 
         //Todo

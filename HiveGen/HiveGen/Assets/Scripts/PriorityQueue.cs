@@ -176,7 +176,19 @@ namespace AStar
 
         public bool Remove(T item)
         {
-            return InnerList.Remove(item);
+            bool removed = InnerList.Remove(item);
+            List<T> copyList = new List<T>();
+            foreach(T n in InnerList)
+            {
+                copyList.Add(n);
+            }
+            Clear();
+            foreach(T n in copyList)
+            {
+                this.Push(n);
+            }
+
+            return removed;
         }
     }
 }
