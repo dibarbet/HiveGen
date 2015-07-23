@@ -98,7 +98,7 @@ namespace Assets.Scripts.dstarlite
         }
 
         //replaces pathnode
-        public class State : IIndexedObject
+        public class State : IIndexedObject, IComparable<State>
         {
             public int X;
             public int Y;
@@ -118,7 +118,7 @@ namespace Assets.Scripts.dstarlite
 
             public static bool operator ==(State s1, State s2)
             {
-                Debug.Log("State == Equals");
+                //Debug.Log("State == Equals");
                 return ((s1.X == s2.X) && (s1.Y == s2.Y));
             }
 
@@ -151,7 +151,7 @@ namespace Assets.Scripts.dstarlite
 
             public static bool operator <(State s1, State s2)
             {
-                Debug.Log("S1.k: " + s1.k + "; S2.k: " + s2.k);
+                //Debug.Log("S1.k: " + s1.k + "; S2.k: " + s2.k);
                 if (s1.k.Item1 + 0.000001 < s2.k.Item1) return true;
                 else if (s1.k.Item1 - 0.000001 > s2.k.Item1) return false;
                 return s1.k.Item2 < s2.k.Item2;
@@ -201,6 +201,11 @@ namespace Assets.Scripts.dstarlite
                 Y = -1;
                 k = n_k;
             }
+
+            public int CompareTo(State other)
+            {
+                return new StateComparer().Compare(this, other);
+            }
         }
 
         public DstarLite(GameManager.SpecialPathNode[,] inGrid)
@@ -231,9 +236,6 @@ namespace Assets.Scripts.dstarlite
                 }
             }
             //Debug.Log("MATRIX: " + matrix);
-            //Init pred and successors based on neighbors.
-            //for each cell, add the 8 neighbors if walkable as in c++
-
         }
 
         public void InitializeGoals(int s_x, int s_y, int g_x, int g_y)
@@ -328,7 +330,7 @@ namespace Assets.Scripts.dstarlite
             {
                 s2 += "(" + s_i.X + ", " + s_i.Y + "), ";
             }
-            Debug.Log(s2);
+            //Debug.Log(s2);
             return s;
         }
 
@@ -360,7 +362,7 @@ namespace Assets.Scripts.dstarlite
             {
                 s2 += "(" + s_i.X + ", " + s_i.Y + "), ";
             }
-            Debug.Log(s2);
+            //Debug.Log(s2);
             return s;
         }
         
@@ -391,12 +393,17 @@ namespace Assets.Scripts.dstarlite
             Tuple<double, double> k_old = new Tuple<double,double>(0,0);
             //while (U.TopKey() < CalculateKey(s_start) || rhs(s_start) != g(s_start))
             //I create a dummy state to compare keys, since compararer is implemented there.
-            Debug.Log("U: " + U.Count);
-            Debug.Log("Peek: " + U.Peek().k);
-            Debug.Log(CalculateKey(s_start));
+            //Debug.Log("U: " + U.Count);
+            //Debug.Log("Peek: " + U.Peek().k);
+            //Debug.Log(CalculateKey(s_start));
             State dummy = new State(CalculateKey(s_start));
+            int iterations = 0;
             while (U.Peek() < dummy || rhs[s_start] != g[s_start])
             {
+                if (iterations > maxIterations)
+                {
+                    return;
+                }
                 //k_old = U.TopKey()
                 k_old = U.Peek().k;
                 //u = U.Pop()
@@ -447,13 +454,13 @@ namespace Assets.Scripts.dstarlite
                 double min = double.PositiveInfinity;
                 foreach(State s in succesors)
                 {
-                    Debug.Log("Update vertex s suc: " + s.X + ", " + s.Y);
+                    //Debug.Log("Update vertex s suc: " + s.X + ", " + s.Y);
                     string dict_s = "Dictionary: ";
                     foreach(State s2 in g.Keys)
                     {
                         dict_s += "(" + s2.X + ", " + s2.Y + "), ";
                     }
-                    Debug.Log(dict_s);
+                    //Debug.Log(dict_s);
                     double val = Cost(u, s) + g[s];
                     if (val < min)
                     {
@@ -473,7 +480,7 @@ namespace Assets.Scripts.dstarlite
             {
                 //U.Insert(u, CalculateKey(u))
                 u.k = CalculateKey(u);
-                Debug.Log("u in updatevertex: " + u.GetType());
+                //Debug.Log("u in updatevertex: " + u.GetType());
                 U.Push(u);
             }
         }
