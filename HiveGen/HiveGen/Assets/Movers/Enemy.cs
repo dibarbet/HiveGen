@@ -376,6 +376,7 @@ public class Enemy : Mover
         foreach(GameManager.SpecialPathNode n in p)
         {
             s_p += "(" + n.X + ", " + n.Y + ") ";
+            n.tile.GetComponent<SpriteRenderer>().color = Color.red;
         }
         Debug.Log(s_p);
     }
