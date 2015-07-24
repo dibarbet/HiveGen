@@ -4961,6 +4961,11 @@ SA: [[WWW.assetBundle]], [[WWW.LoadFromCacheOrDownload]].</param>
         <para>Event that is fired before any camera starts rendering.</para>
       </summary>
     </member>
+    <member name="P:UnityEngine.Camera.opaqueSortMode">
+      <summary>
+        <para>Opaque object sorting mode.</para>
+      </summary>
+    </member>
     <member name="P:UnityEngine.Camera.orthographic">
       <summary>
         <para>Is the camera orthographic (''true'') or perspective (''false'')?</para>
@@ -18200,12 +18205,6 @@ GUILayout::ref::MaxHeight, GUILayout::ref::ExpandWidth, GUILayout::ref::ExpandHe
       </summary>
       <param name="lods">The LODs to use for this group.</param>
     </member>
-    <member name="M:UnityEngine.LODGroup.SetLODS(UnityEngine.LOD[])">
-      <summary>
-        <para>Set the LODs for the LOD group. This will remove any existing LODs configured on the LODGroup.</para>
-      </summary>
-      <param name="lods">The LODs to use for this group.</param>
-    </member>
     <member name="T:UnityEngine.LogType">
       <summary>
         <para>The type of the log message in the delegate registered with Application.RegisterLogCallback.</para>
@@ -18739,6 +18738,11 @@ GUILayout::ref::MaxHeight, GUILayout::ref::ExpandWidth, GUILayout::ref::ExpandHe
     <member name="T:UnityEngine.MaterialPropertyBlock">
       <summary>
         <para>A block of material values to apply.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.MaterialPropertyBlock.isEmpty">
+      <summary>
+        <para>Is the material property block empty? (RO)</para>
       </summary>
     </member>
     <member name="M:UnityEngine.MaterialPropertyBlock.AddColor(System.String,UnityEngine.Color)">
@@ -21602,6 +21606,11 @@ If the Elo is provided the result set will be ordered according to the magnitude
 Each game can calculate this value as they wish according to whatever scale is best for that game.</para>
       </summary>
     </member>
+    <member name="P:UnityEngine.Networking.Match.ListMatchRequest.includePasswordMatches">
+      <summary>
+        <para>Only return matches that have a password if this is true, only return matches without a password if this is false.</para>
+      </summary>
+    </member>
     <member name="P:UnityEngine.Networking.Match.ListMatchRequest.matchAttributeFilterEqualTo">
       <summary>
         <para>List of match attributes to filter against. This will filter down to matches that both have a name that contains the entire text string provided and the value specified in the filter is equal to the attribute value for the matching name.
@@ -21956,6 +21965,11 @@ The game is free to use this as desired to assist in finding better match result
     <member name="P:UnityEngine.Networking.Match.Request.domain">
       <summary>
         <para>Domain for the request. All commands will be sandboxed to their own domain; For example no clients with domain 1 will see matches with domain 2. This can be used to prevent incompatible client versions from communicating.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.Networking.Match.Request.projectId">
+      <summary>
+        <para>The Cloud Project Id for this game, required in every request. This is used to match games of the same type.</para>
       </summary>
     </member>
     <member name="P:UnityEngine.Networking.Match.Request.sourceId">
@@ -25369,9 +25383,9 @@ Note that IgnoreLayerCollision will reset the trigger state of affected collider
         <para>Applies "platform" behaviour such as one-way collisions etc.</para>
       </summary>
     </member>
-    <member name="P:UnityEngine.PlatformEffector2D.sideAngleVariance">
+    <member name="P:UnityEngine.PlatformEffector2D.surfaceArc">
       <summary>
-        <para>The angle variance centered on the sides of the platform.  Zero angle only matches sides 90-degree to the platform "top".</para>
+        <para>The angle of an arc that defines the surface of the platform centered of the local 'up' of the effector.</para>
       </summary>
     </member>
     <member name="P:UnityEngine.PlatformEffector2D.useOneWay">
@@ -28508,6 +28522,26 @@ SA: [[ReflectionProbeTimeSlicingMode]].</para>
         <para>Before shadowmap is rendered.</para>
       </summary>
     </member>
+    <member name="T:UnityEngine.Rendering.OpaqueSortMode">
+      <summary>
+        <para>Opaque object sorting mode of a [[Camera]].</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.Rendering.OpaqueSortMode.Default">
+      <summary>
+        <para>Default opaque sorting mode.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.Rendering.OpaqueSortMode.FrontToBack">
+      <summary>
+        <para>Do rough front-to-back sorting of opaque objects.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.Rendering.OpaqueSortMode.NoDistanceSort">
+      <summary>
+        <para>Do not sort opaque objects by distance.</para>
+      </summary>
+    </member>
     <member name="T:UnityEngine.Rendering.PassType">
       <summary>
         <para>Shader pass type for Unity's lighting pipeline.</para>
@@ -30644,6 +30678,11 @@ Updating a probe's cubemap is a costly operation. Unity needs to render the enti
         <para>Creates an instance of a scriptable object with /T/.</para>
       </summary>
     </member>
+    <member name="T:UnityEngine.Scripting.PreserveAttribute">
+      <summary>
+        <para>PreserveAttribute prevents byte code stripping from removing a class, method, field, or property.</para>
+      </summary>
+    </member>
     <member name="T:UnityEngine.Security">
       <summary>
         <para>Webplayer security related class.</para>
@@ -32769,6 +32808,11 @@ Updating a probe's cubemap is a costly operation. Unity needs to render the enti
       </summary>
       <param name="instance"></param>
     </member>
+    <member name="M:UnityEngine.Terrain.ApplyDelayedHeightmapModification">
+      <summary>
+        <para>Update the terrain's LOD and vegetation information after making changes with [[TerrainData.SetHeightsDelayLOD]].</para>
+      </summary>
+    </member>
     <member name="M:UnityEngine.Terrain.CreateTerrainGameObject(UnityEngine.TerrainData)">
       <summary>
         <para>Creates a Terrain including collider from [[TerrainData]].</para>
@@ -33067,6 +33111,14 @@ Updating a probe's cubemap is a costly operation. Unity needs to render the enti
       <param name="resolutionPerPatch">Specifies the size in pixels of each individually rendered detail patch. A larger number reduces draw calls, but might increase triangle count since detail patches are culled on a per batch basis. A recommended value is 16. If you use a very large detail object distance and your grass is very sparse, it makes sense to increase the value.</param>
     </member>
     <member name="M:UnityEngine.TerrainData.SetHeights(System.Int32,System.Int32,System.Single[,])">
+      <summary>
+        <para>Set an array of heightmap samples.</para>
+      </summary>
+      <param name="xBase">First x index of heightmap samples to set.</param>
+      <param name="yBase">First y index of heightmap samples to set.</param>
+      <param name="heights">Array of heightmap samples to set (values range from 0 to 1, array indexed as [y,x]).</param>
+    </member>
+    <member name="M:UnityEngine.TerrainData.SetHeightsDelayLOD(System.Int32,System.Int32,System.Single[,])">
       <summary>
         <para>Set an array of heightmap samples.</para>
       </summary>
@@ -34862,17 +34914,17 @@ Updating a probe's cubemap is a costly operation. Unity needs to render the enti
     </member>
     <member name="F:UnityEngine.TransparencySortMode.Default">
       <summary>
-        <para>Default sorting mode.</para>
+        <para>Default transparency sorting mode.</para>
       </summary>
     </member>
     <member name="F:UnityEngine.TransparencySortMode.Orthographic">
       <summary>
-        <para>Orthographic sorting mode.</para>
+        <para>Orthographic transparency sorting mode.</para>
       </summary>
     </member>
     <member name="F:UnityEngine.TransparencySortMode.Perspective">
       <summary>
-        <para>Perspective sorting mode.</para>
+        <para>Perspective transparency sorting mode.</para>
       </summary>
     </member>
     <member name="T:UnityEngine.Tree">
