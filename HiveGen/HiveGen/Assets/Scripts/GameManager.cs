@@ -22,6 +22,7 @@ public class GameManager : MonoBehaviour {
     private static int PLAYERHP;
 
     public static bool DoDstarLite;
+    public static float MinimumDistance;
 
 	//UI Elements:
 	public float levelStartDelay = 2f;
@@ -61,12 +62,53 @@ public class GameManager : MonoBehaviour {
         }
         Debug.Log(final);
 
-        
+        DoDstarLite = false;
+        MinimumDistance = 5.0f;
 
 	}
 
 	void OnLevelWasLoaded(int index){
         PLAYERHP = player.HealthPoints;
+        switch (level)
+        {
+            case 0:
+                MinimumDistance = 5.0f;
+                break;
+            case 1:
+                MinimumDistance = 5.5f;
+                break;
+            case 2:
+                MinimumDistance = 6.0f;
+                break;
+            case 3:
+                MinimumDistance = 6.5f;
+                break;
+            case 4:
+                //Debug.Log("level: " + level);
+                MinimumDistance = 7.0f;
+                break;
+            case 5:
+                MinimumDistance = 7.5f;
+                break;
+            case 6:
+                MinimumDistance = 8.0f;
+                break;
+            case 7:
+                MinimumDistance = 8.5f;
+                break;
+            case 8:
+                MinimumDistance = 9.0f;
+                break;
+            case 9:
+                MinimumDistance = 9.5f;
+                break;
+            case 10:
+                MinimumDistance = 10f;
+                break;
+            default:
+                MinimumDistance = 10f;
+                break;
+        }
 		level++;
 		InitGame();
 	}

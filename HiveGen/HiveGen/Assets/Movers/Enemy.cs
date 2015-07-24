@@ -57,7 +57,7 @@ public class Enemy : Mover
     GameManager.SpecialPathNode CurrentDstarNode;
     int CurDstarIndex;
 
-
+    float minDist = 5.0f;
     //Use awake, start is not always called at object creation, leading to null reference errors
     public void Awake()
     {
@@ -89,6 +89,9 @@ public class Enemy : Mover
         Player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         Exit = GameObject.FindGameObjectWithTag("Exit");
         DoDstarLite = GameManager.DoDstarLite;
+        
+        minDist = GameManager.MinimumDistance;
+        Debug.Log("min dist: " + GameManager.MinimumDistance);
         //TestDstar();
     }
 
@@ -193,7 +196,7 @@ public class Enemy : Mover
         else if (curDecision == "DEFENDGOAL")
         {
             GameManager.SpecialPathNode exitTile = GameManager.ExitTile;
-            Debug.Log("EXit: " + exitTile.X + ", " + exitTile.Y);
+            //Debug.Log("EXit: " + exitTile.X + ", " + exitTile.Y);
             if (DoDstarLite)
             {
                 this.MoveToTileDstar(exitTile);
@@ -319,7 +322,7 @@ public class Enemy : Mover
         }
     }
 
-    float minDist = 5.0f;
+    
 
     public string PlayerHPDecision()
     {
@@ -520,7 +523,7 @@ public class Enemy : Mover
         }
         else
         {
-            Debug.Log("Replanning");
+            //Debug.Log("Replanning");
             dstar.UpdateStart(eTile.X, eTile.Y);
             dstar.UpdateGoal(tile.X, tile.Y);
             dstar.Replan();
@@ -529,7 +532,7 @@ public class Enemy : Mover
         }
         if (DstarPath.Count > 1)
         {
-            Debug.Log("Found path");
+            //Debug.Log("Found path");
             //Debug.Log(DstarPath[0].X + ", " + DstarPath[0].Y);
             //Debug.Log(eTile.X + ", " + eTile.Y);
             IsMoving = true;
