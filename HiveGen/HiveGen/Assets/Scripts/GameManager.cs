@@ -21,6 +21,8 @@ public class GameManager : MonoBehaviour {
 
     private static int PLAYERHP;
 
+    public static bool DoDstarLite;
+
 	//UI Elements:
 	public float levelStartDelay = 2f;
 	public Text levelText;
@@ -71,6 +73,7 @@ public class GameManager : MonoBehaviour {
 
     void Start()
     {
+        DoDstarLite = true;
         //Access enemies
         enemies = FindObjectsOfType<Enemy>();
         //Instantiate their search space
@@ -195,6 +198,17 @@ public class GameManager : MonoBehaviour {
                 }
             }
         }
+        /*
+        for(int i = 0; i < boardArray.GetLength(0); i++)
+        {
+            for (int j = 0; j < boardArray.GetLength(1); j++)
+            {
+                if (boardArray != null && boardArray[i,j].tile != null && boardArray[i,j].tile.tag == "Floor")
+                {
+                    boardArray[i, j].tile.GetComponent<SpriteRenderer>().color = Color.white;
+                }
+            }
+        }*/
 		
 	}
 

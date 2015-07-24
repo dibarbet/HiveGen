@@ -259,18 +259,18 @@ namespace Assets.Scripts.dstarlite
 
         public void UpdateStart(int s_x, int s_y)
         {
-            s_start.X = s_x;
-            s_start.Y = s_y;
+            s_start = new State(s_x, s_y, s_start.k);
 
             k_m += h(s_last, s_start);
-
+            //Debug.Log("Start_s: " + s_start.X + ", " + s_start.Y);
+            //Debug.Log("in dict: " + g[s_start] + ", " + rhs[s_start]);
             s_start.k = CalculateKey(s_start);
             s_last = s_start;
         }
 
         public void UpdateGoal(int g_x, int g_y)
         {
-            /*
+            
             //list< pair<ipoint2, double> > toAdd;
             List<State> toAdd = new List<State>();
             //pair<ipoint2, double> tp;
@@ -278,44 +278,74 @@ namespace Assets.Scripts.dstarlite
             //ds_ch::iterator i;
             //list< pair<ipoint2, double> >::iterator kk;
             //for(i=cellHash.begin(); i!=cellHash.end(); i++) {
-            for (int i = 0; i < )
+            for (int i = 0; i < Width; i++)
+            {
+                for(int j = 0; j < Height; j++)
+                {
+                    if (!m_SearchSpace[i,j].IsWalkable() )
+                    {
+                        toAdd.Add(m_SearchSpace[i,j]);
+                    }
+                }
+            }
+            /*
               if (!close(i->second.cost, C1)) {
                   tp.first.x = i->first.x;
                   tp.first.y = i->first.y;
                   tp.second = i->second.cost;
                   toAdd.push_back(tp);
-              }
-            }
-
+              }*/
+            /*
             cellHash.clear();
             openHash.clear();
 
             while(!openList.empty())
-                openList.pop();
+                openList.pop();*/
+            g.Clear();
+            rhs.Clear();
+            U.Clear();
+            for (int i = 0; i < Width; i++)
+            {
+                for (int j = 0; j < Height; j++)
+                {
+                    rhs[m_SearchSpace[i, j]] = double.PositiveInfinity;
+                    g[m_SearchSpace[i, j]] = double.PositiveInfinity;
+                }
+            }
   
             k_m = 0;
-            s_goal.x  = x;
-            s_goal.y  = y;
-            cellInfo tmp;
-            tmp.g = tmp.rhs =  0;
-            tmp.cost = C1;
+            s_goal = new State(g_x, g_y);
+            g[s_goal] = 0;
+            rhs[s_goal] = 0;
+            //cellInfo tmp;
+            //tmp.g = tmp.rhs =  0;
+            
+            //tmp.cost = C1;
 
-            cellHash[s_goal] = tmp;
+            //cellHash[s_goal] = tmp;
 
-            tmp.g = tmp.rhs = heuristic(s_start,s_goal);
-            tmp.cost = C1;
-            cellHash[s_start] = tmp;
-            s_start = calculateKey(s_start);
+            //tmp.g = tmp.rhs = heuristic(s_start,s_goal);
+            //tmp.cost = C1;
+            //cellHash[s_start] = tmp;
+            g[s_start] = h(s_start, s_goal);
+            rhs[s_start] = h(s_start, s_goal);
+
+            s_start.k = CalculateKey(s_start);
 
             s_last = s_start;    
 
-            for (kk=toAdd.begin(); kk != toAdd.end(); kk++) {
-                updateCell(kk->first.x, kk->first.y, kk->second);
-            }*/
+            //for (kk=toAdd.begin(); kk != toAdd.end(); kk++) {
+            //    updateCell(kk->first.x, kk->first.y, kk->second);
+            //}
+            for(int i = 0; i < toAdd.Count; i++)
+            {
+                UpdateVertex(toAdd[i]);
+            }
         }
 
         public void Replan()
         {
+            Path.Clear();
             int iterations = 0;
             //Begin psuedo code here
             //s_last = s_start

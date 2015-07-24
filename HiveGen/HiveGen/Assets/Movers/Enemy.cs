@@ -51,7 +51,11 @@ public class Enemy : Mover
     private LinkedList<GameManager.SpecialPathNode> path;
     private LinkedListNode<GameManager.SpecialPathNode> CurrentGoalNode;
 
+    public bool DoDstarLite;
     private DstarLite<GameManager.SpecialPathNode, System.Object> dstar;
+    List<GameManager.SpecialPathNode> DstarPath;
+    GameManager.SpecialPathNode CurrentDstarNode;
+    int CurDstarIndex;
 
 
     //Use awake, start is not always called at object creation, leading to null reference errors
@@ -84,7 +88,8 @@ public class Enemy : Mover
     {
         Player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         Exit = GameObject.FindGameObjectWithTag("Exit");
-        TestDstar();
+        DoDstarLite = GameManager.DoDstarLite;
+        //TestDstar();
     }
 
 
@@ -152,7 +157,15 @@ public class Enemy : Mover
         if (curDecision == "CHASE")
         {
             GameManager.SpecialPathNode playerTile = Player.GetTileOn();
-            this.MoveToTile(playerTile);
+            if (DoDstarLite)
+            {
+                this.MoveToTileDstar(playerTile);
+            }
+            else
+            {
+                this.MoveToTile(playerTile);
+            }
+            
             //To make sure it keeps moving, rather than sitting on "CHASE"
             curDecision = "FINDINGPLAYER";
         }
@@ -166,7 +179,14 @@ public class Enemy : Mover
             if (target != null)
             {
                 Debug.Log(target);
-                this.MoveToTile(target.GetTileOn());
+                if (DoDstarLite)
+                {
+                    this.MoveToTileDstar(target.GetTileOn());
+                }
+                else
+                {
+                    this.MoveToTile(target.GetTileOn());
+                }
                 curDecision = "MOVINGTOBULLET";
             }
         }
@@ -174,7 +194,14 @@ public class Enemy : Mover
         {
             GameManager.SpecialPathNode exitTile = GameManager.ExitTile;
             Debug.Log("EXit: " + exitTile.X + ", " + exitTile.Y);
-            this.MoveToTile(exitTile);
+            if (DoDstarLite)
+            {
+                this.MoveToTileDstar(exitTile);
+            }
+            else
+            {
+                this.MoveToTile(exitTile);
+            }
             curDecision = "DEFENDINGGOAL";
         }
         else if (curDecision == "DEFENDINGGOAL")
@@ -190,47 +217,105 @@ public class Enemy : Mover
         {
             if (attacked != null)
             {
-                this.MoveToTile(attacked.GetTileOn());
+                if (DoDstarLite)
+                {
+                    this.MoveToTileDstar(attacked.GetTileOn());
+                }
+                else
+                {
+                    this.MoveToTile(attacked.GetTileOn());
+                }
+                
                 curDecision = "MOVINGTOENEMY";
             }
         }
 
         Position = transform.position;
-        if ((CurrentGoalNode != null) && IsAtGoal(CurrentGoalNode.Value.tile.transform.position))
+        if (DoDstarLite)
         {
-
-            LinkedListNode<GameManager.SpecialPathNode> next = CurrentGoalNode.Next;
-            if (next == null)
+            if ((CurrentDstarNode != null) && IsAtGoal(CurrentDstarNode.tile.transform.position))
             {
-                //Debug.Log("Final node found");
-                //end of list
-                IsMoving = false;
-                if (curDecision == "MOVINGTOBULLET")
+                CurDstarIndex++;
+                if (CurDstarIndex >= DstarPath.Count)
                 {
-                    curDecision = "DONEMOVINGTOBULLET";
+                    Debug.Log("Final Node found");
+                    //end of nodes
+                    IsMoving = false;
+                    if (curDecision == "MOVINGTOBULLET")
+                    {
+                        curDecision = "DONEMOVINGTOBULLET";
+                    }
+                    if (curDecision == "MOVINGTOENEMY")
+                    {
+                        curDecision = "DONEMOVINGTOENEMY";
+                    }
+                    CurrentDstarNode = null;
                 }
-                if (curDecision == "MOVINGTOENEMY")
+                else
                 {
-                    curDecision = "DONEMOVINGTOENEMY";
+                    GameManager.SpecialPathNode next = DstarPath[CurDstarIndex];
+                    MoveToDstarNode(next);
                 }
             }
             else
             {
-                MoveToNode(next);
+                if (CurrentDstarNode != null)
+                {
+                    TileX = CurrentDstarNode.X;
+                    TileY = CurrentDstarNode.Y;
+                }
             }
         }
         else
         {
-            if (CurrentGoalNode != null)
+            if ((CurrentGoalNode != null) && IsAtGoal(CurrentGoalNode.Value.tile.transform.position))
             {
-                TileX = CurrentGoalNode.Value.X;
-                TileY = CurrentGoalNode.Value.Y;
+
+                LinkedListNode<GameManager.SpecialPathNode> next = CurrentGoalNode.Next;
+                if (next == null)
+                {
+                    //Debug.Log("Final node found");
+                    //end of list
+                    IsMoving = false;
+                    if (curDecision == "MOVINGTOBULLET")
+                    {
+                        curDecision = "DONEMOVINGTOBULLET";
+                    }
+                    if (curDecision == "MOVINGTOENEMY")
+                    {
+                        curDecision = "DONEMOVINGTOENEMY";
+                    }
+                }
+                else
+                {
+                    MoveToNode(next);
+                }
+            }
+            else
+            {
+                if (CurrentGoalNode != null)
+                {
+                    TileX = CurrentGoalNode.Value.X;
+                    TileY = CurrentGoalNode.Value.Y;
+                }
             }
         }
+        
         if (IsMoving)
         {
             //Debug.Log("goal: " + GoalPos);
             transform.position = Vector3.MoveTowards(transform.position, GoalPos, Speed * Time.deltaTime);
+        }
+
+        if (DoDstarLite)
+        {
+            /*
+            string s_e = "";
+            foreach (GameManager.SpecialPathNode n in DstarPath)
+            {
+                s_e += "(" + n.X + ", " + n.Y + ") ";
+                n.tile.GetComponent<SpriteRenderer>().color = Color.blue;
+            }*/
         }
     }
 
@@ -363,6 +448,7 @@ public class Enemy : Mover
     public void InstantiateDStar(GameManager.SpecialPathNode[,] board)
     {
         dstar = new DstarLite<GameManager.SpecialPathNode, object>(board);
+        DstarPath = new List<GameManager.SpecialPathNode>();
     }
 
     public void TestDstar()
@@ -379,13 +465,24 @@ public class Enemy : Mover
             n.tile.GetComponent<SpriteRenderer>().color = Color.red;
         }
         Debug.Log(s_p);
+
+        dstar.UpdateStart(GameManager.ExitTile.X, GameManager.ExitTile.Y);
+        dstar.Replan();
+        List<GameManager.SpecialPathNode> p2 = dstar.GetPath();
+        string s_e = "";
+        foreach (GameManager.SpecialPathNode n in p2)
+        {
+            s_e += "(" + n.X + ", " + n.Y + ") ";
+            n.tile.GetComponent<SpriteRenderer>().color = Color.blue;
+        }
+        Debug.Log(s_e);
     }
 
     public void InstantiateAStar(GameManager.SpecialPathNode[,] board)
     {
         aStar = new SpatialAStar<GameManager.SpecialPathNode, System.Object>(board);
     }
-
+    
     public bool MoveToTile(GameManager.SpecialPathNode tile)
     {
         path = aStar.Search(TileX, TileY, tile.X, tile.Y, null);
@@ -396,16 +493,70 @@ public class Enemy : Mover
             GoalPos = path.First.Value.tile.transform.position;
             CurrentGoalNode = path.First;
             LinkedListNode<GameManager.SpecialPathNode> next = path.First;
+            /*
             string pathStr = "";
             while (next != null)
             {
                 pathStr += "(" + next.Value.X + ", " + next.Value.Y + "); ";
                 next = next.Next;
             }
-            //Debug.Log(pathStr);
+            //Debug.Log(pathStr);*/
             return true;
         }
         return false;
+    }
+
+    public void MoveToTileDstar(GameManager.SpecialPathNode tile)
+    {
+        GameManager.SpecialPathNode eTile = this.GetTileOn();
+        CurDstarIndex = 0;
+        if (DstarPath.Count == 0)
+        {
+            //First time
+            dstar.InitializeGoals(eTile.X, eTile.Y, tile.X, tile.Y);
+            dstar.Replan();
+            DstarPath = dstar.GetPath();
+            DstarPath.Add(tile);
+        }
+        else
+        {
+            Debug.Log("Replanning");
+            dstar.UpdateStart(eTile.X, eTile.Y);
+            dstar.UpdateGoal(tile.X, tile.Y);
+            dstar.Replan();
+            DstarPath = dstar.GetPath();
+            DstarPath.Add(tile);
+        }
+        if (DstarPath.Count > 1)
+        {
+            Debug.Log("Found path");
+            //Debug.Log(DstarPath[0].X + ", " + DstarPath[0].Y);
+            //Debug.Log(eTile.X + ", " + eTile.Y);
+            IsMoving = true;
+            GoalPos = DstarPath[1].tile.transform.position;
+            CurrentDstarNode = DstarPath[1];
+            CurDstarIndex = 1;
+            /*
+            string s_e = "";
+            foreach (GameManager.SpecialPathNode n in DstarPath)
+            {
+                s_e += "(" + n.X + ", " + n.Y + ") ";
+                //n.tile.GetComponent<SpriteRenderer>().color = Color.blue;
+            }*/
+            //Debug.Log(s_e);
+            //CurrentGoalNode = DstarPath[0];
+            //LinkedListNode<GameManager.SpecialPathNode> next = path.First;
+        }
+    }
+
+    private void MoveToDstarNode(GameManager.SpecialPathNode node)
+    {
+        if (node != null)
+        {
+            IsMoving = true;
+            CurrentDstarNode = node;
+            GoalPos = node.tile.transform.position;
+        }
     }
 
     private void MoveToNode(LinkedListNode<GameManager.SpecialPathNode> node)
@@ -415,8 +566,7 @@ public class Enemy : Mover
             IsMoving = true;
             CurrentGoalNode = node;
             GoalPos = node.Value.tile.transform.position;
-        }
-        
+        }     
     }
 
     private IEnumerator ColorSprite()
@@ -525,6 +675,14 @@ public class Enemy : Mover
             //this.PauseMoving();
             //Debug.Log("Goal after collision (should be position): " + GoalPos.ToString());
         }
-        MoveToNode(CurrentGoalNode);
+        if (DoDstarLite)
+        {
+            MoveToDstarNode(CurrentDstarNode);
+        }
+        else
+        {
+            MoveToNode(CurrentGoalNode);
+        }
+        
     }
 }
