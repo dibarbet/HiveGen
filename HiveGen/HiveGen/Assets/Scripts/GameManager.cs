@@ -27,7 +27,8 @@ public class GameManager : MonoBehaviour {
 
 	//UI Elements:
 	public float levelStartDelay = 2f;
-	public Text levelText;
+	public Text levelText; //Shows level between levels.
+	public Text levelDisplayText; //Shows level number above health while playing.
 	public Text exitText;
 	private static GameObject levelImage;
 	private static int level = 1;
@@ -52,6 +53,8 @@ public class GameManager : MonoBehaviour {
 		DontDestroyOnLoad(gameObject); //Allow GameManager to persist when the level changes.
 //		boardScript = GetComponent<BoardManager>();
 		exitText = GameObject.Find ("ExitText").GetComponent<Text>();
+		levelDisplayText = GameObject.Find ("LevelDisplayText").GetComponent<Text>();
+		levelDisplayText.text = "Level: "+level;
 		//InitGame();
 //        int rowLength = boardArray.GetLength(0);
 //        int colLength = boardArray.GetLength(1);
@@ -185,6 +188,12 @@ public class GameManager : MonoBehaviour {
 			exitText.enabled = false;
 		}else if (exitText!=null && exitText.enabled)
 			exitText.enabled = false;
+		if (levelDisplayText==null){
+			levelDisplayText = GameObject.Find ("LevelDisplayText").GetComponent<Text>();
+			levelDisplayText.text = "Level: "+level;
+		}else if (levelDisplayText!=null)
+			levelDisplayText.text = "Level: "+level;
+
 		titleImage.SetActive(false);
 		titleBool = false;
 		levelImage = GameObject.Find("LevelImage");
@@ -243,7 +252,7 @@ public class GameManager : MonoBehaviour {
 		}
         if (player == null && enemies.Length == 0)
         {
-			print ("update: null and length enemies==0");
+			//print ("update: null and length enemies==0");
             Mover[] movers = FindObjectsOfType<Mover>();
             foreach (Mover m in movers)
             {
@@ -252,11 +261,11 @@ public class GameManager : MonoBehaviour {
             }
         }else if (player == null)
 		{
-			print ("update: player null");
+			//print ("update: player null");
 			GameOver();
 		}else
         {
-			print ("update: player not null");
+			//print ("update: player not null");
             PlayerLocation = player.GetComponent<Player>().GetTileOn();
             if (!doingSetup)
             {
