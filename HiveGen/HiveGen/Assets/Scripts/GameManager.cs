@@ -285,7 +285,7 @@ public class GameManager : MonoBehaviour {
                 }
             }
         }
-        /*
+        
         for(int i = 0; i < boardArray.GetLength(0); i++)
         {
             for (int j = 0; j < boardArray.GetLength(1); j++)
@@ -295,7 +295,7 @@ public class GameManager : MonoBehaviour {
                     boardArray[i, j].tile.GetComponent<SpriteRenderer>().color = Color.white;
                 }
             }
-        }*/
+        }
 		
 	}
 

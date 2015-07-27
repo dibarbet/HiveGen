@@ -313,13 +313,24 @@ public class Enemy : Mover
 
         if (DoDstarLite)
         {
-            /*
+            
             string s_e = "";
             foreach (GameManager.SpecialPathNode n in DstarPath)
             {
                 s_e += "(" + n.X + ", " + n.Y + ") ";
                 n.tile.GetComponent<SpriteRenderer>().color = Color.blue;
-            }*/
+            }
+        }
+        else
+        {
+            string pathStr = "";
+            LinkedListNode<GameManager.SpecialPathNode> next = path.First;
+            while (next != null)
+            {
+                pathStr += "(" + next.Value.X + ", " + next.Value.Y + "); ";
+                next.Value.tile.GetComponent<SpriteRenderer>().color = Color.blue;
+                next = next.Next;
+            }
         }
     }
 
@@ -502,6 +513,7 @@ public class Enemy : Mover
             while (next != null)
             {
                 pathStr += "(" + next.Value.X + ", " + next.Value.Y + "); ";
+                next.Value.tile.GetComponent<SpriteRenderer>().color = Color.blue;
                 next = next.Next;
             }
             //Debug.Log(pathStr);*/
@@ -540,13 +552,13 @@ public class Enemy : Mover
             GoalPos = DstarPath[1].tile.transform.position;
             CurrentDstarNode = DstarPath[1];
             CurDstarIndex = 1;
-            /*
+            
             string s_e = "";
             foreach (GameManager.SpecialPathNode n in DstarPath)
             {
                 s_e += "(" + n.X + ", " + n.Y + ") ";
                 //n.tile.GetComponent<SpriteRenderer>().color = Color.blue;
-            }*/
+            }
             //Debug.Log(s_e);
             //CurrentGoalNode = DstarPath[0];
             //LinkedListNode<GameManager.SpecialPathNode> next = path.First;
