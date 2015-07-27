@@ -492,7 +492,7 @@ public class BoardManager : MonoBehaviour {
 			List<Cell> allActive = activeCells.Values.ToList();
 			for (int i=0; i<allActive.Count; i++){
 				List<Cell> neighbors = GetNeighbors(allActive[i], activeCells, false);
-				if (neighbors.Count>=4 && neighbors.Count>0){ //If this active cell has 4 or less active neighbors, add one randomly.
+				if (neighbors.Count>=5 && neighbors.Count>0){ //If this active cell has 4 or less active neighbors, add one randomly.
 					toBeActivated.Add(neighbors[Random.Range(0,neighbors.Count)]); //Get a random inactive neighbor and set it to be active on the next generation.
 				}
 			}
