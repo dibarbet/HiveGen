@@ -70,8 +70,9 @@ public class Player : Mover
     }
 
     public override bool Die(){
+		print ("player died.");
 		GameManager.instance.GameOver();
-		return this.Die ();
+		return base.Die ();
 	}
 
     public bool DecrementHealth(int amt)

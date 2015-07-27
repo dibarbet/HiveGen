@@ -125,7 +125,7 @@ public class BoardManager : MonoBehaviour {
 	 * -1 : obstacle
 	 * 0  : floor
 	 * 1  : base enemy
-	 * 2  : boos enemy
+	 * 2  : boss enemy
 	 * 
 	 * Note: this function does not affect placement of doors or player.
 	 */
@@ -223,6 +223,7 @@ public class BoardManager : MonoBehaviour {
 	///for main gameplay use over SetupDefaultScene.
 	///*
 	public GameManager.SpecialPathNode[,] SetupPCGScene(int level, int optSeed=int.MinValue){
+		print ("BoardManager.SetupPCGScene()");
 		if(optSeed!=int.MinValue)
 			Random.seed = optSeed;
 		optSeed = Random.seed;

@@ -195,6 +195,7 @@ public class Enemy : Mover
         }
         else if (curDecision == "DEFENDGOAL")
         {
+			print ("ENEMY DEFENDING GOAL");
             GameManager.SpecialPathNode exitTile = GameManager.ExitTile;
             //Debug.Log("EXit: " + exitTile.X + ", " + exitTile.Y);
             if (DoDstarLite)

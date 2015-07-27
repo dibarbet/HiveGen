@@ -3,7 +3,7 @@ using System.Collections;
 
 public class CameraUpdater : MonoBehaviour {
 
-	private Transform target;
+	public Transform target;
 	public float distance = 10f;
 
 	// Update is called once per frame
@@ -17,11 +17,15 @@ public class CameraUpdater : MonoBehaviour {
             }
             else
             {
-                DestroyObject(this);
+				if(!GameManager.titleImage.activeSelf && !GameManager.instance.titleBool && !GameManager.instance.doingSetup){
+					print ("destroying camera");
+					DestroyObject(this);
+				}
                 return;
             }
             
-        }
+		}
+		//print ("camera target: "+target);
 		transform.position = new Vector3(target.position.x, target.position.y, target.position.z - distance);
 	}
 }
