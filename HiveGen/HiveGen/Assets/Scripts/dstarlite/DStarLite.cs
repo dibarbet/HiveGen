@@ -588,7 +588,20 @@ namespace Assets.Scripts.dstarlite
 
             if (!rhs.ContainsKey(a) && !g.ContainsKey(a)) return scale * C1;
             return scale * cellHash[a].cost;*/
-            return 1;
+            if (!a.IsWalkable() || !b.IsWalkable())
+            {
+                return double.PositiveInfinity;
+            }
+
+            int xd = Math.Abs(a.X - b.X);
+            int yd = Math.Abs(a.Y - b.Y);
+            double scale = 1;
+
+            if (xd + yd > 1) scale = Math.Sqrt(2);
+
+            if (!rhs.ContainsKey(a) && !g.ContainsKey(a)) return scale * C1;
+
+            return scale;
         }
 
         public Tuple<double, double> CalculateKey(State s)
